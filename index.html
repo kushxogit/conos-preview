@@ -437,6 +437,50 @@ h1,h2,h3,.disp{font-family:"Sora",sans-serif}
 #toast{position:absolute;left:18px;right:18px;bottom:84px;display:flex;justify-content:center;pointer-events:none;z-index:26}
 .toast{background:var(--ink);color:#fff;font-size:12.5px;font-weight:500;padding:12px 18px;border-radius:12px;box-shadow:var(--sh-2)}
 
+/* Con Credits Modal */
+.cred-sheet{padding:14px 20px 24px;max-height:85vh;border-radius:24px 24px 0 0}
+.cred-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.cred-title-wrap{display:flex;align-items:center;gap:10px}
+.cred-icon{width:40px;height:40px;border-radius:13px;background:linear-gradient(135deg,#FFF7ED,#FFEDD5);
+  border:1px solid #FED7AA;color:#EA580C;display:flex;align-items:center;justify-content:center;
+  box-shadow:0 2px 8px rgba(234,88,12,.15);flex:none}
+.cred-icon svg{width:20px;height:20px;filter:drop-shadow(0 1px 2px rgba(234,88,12,.3))}
+.cred-title-wrap h3{font-family:"Sora",sans-serif;font-size:17px;font-weight:700;letter-spacing:-.3px;margin:0;color:var(--ink)}
+.cred-title-wrap p{font-size:11.5px;color:var(--muted);margin:1px 0 0}
+.cred-close{width:32px;height:32px;border-radius:50%;border:none;background:var(--paper-2);
+  color:var(--text);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1}
+
+.cred-balance-card{background:linear-gradient(135deg,#0A1C3C 0%,#173A6E 100%);border-radius:18px;
+  padding:16px 18px;color:#fff;box-shadow:0 4px 16px rgba(10,28,60,.18);position:relative;overflow:hidden;margin-bottom:16px}
+.cred-balance-card::after{content:"";position:absolute;right:-20px;top:-20px;width:120px;height:120px;
+  border-radius:50%;background:radial-gradient(circle,rgba(0,217,255,.25),transparent 70%);pointer-events:none}
+.cb-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.cb-label{font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.12em;color:#94A3B8;font-weight:600}
+.cb-tag{font-size:11px;font-weight:700;color:var(--cyan);background:rgba(0,217,255,.12);
+  border:1px solid rgba(0,217,255,.3);padding:2px 8px;border-radius:99px}
+.cb-num{display:flex;align-items:baseline;gap:6px}
+.cb-val{font-family:"Sora",sans-serif;font-size:32px;font-weight:800;letter-spacing:-.8px;color:#fff}
+.cb-unit{font-size:14px;color:#CBD5E1;font-weight:600}
+.cb-equiv{font-size:12px;color:#94A3B8;margin-top:4px}
+.cb-equiv b{color:var(--cyan);font-weight:700}
+
+.cred-body h4{font-family:"Sora",sans-serif;font-size:13.5px;font-weight:700;letter-spacing:-.2px;margin:0 0 10px;color:var(--ink)}
+.cred-steps{list-style:none;padding:0;margin:0 0 18px;display:flex;flex-direction:column;gap:10px}
+.cred-steps li{display:flex;gap:12px;padding:11px 12px;background:var(--paper-2);border-radius:14px;border:1px solid var(--line-2);align-items:center}
+.step-icon{width:36px;height:36px;border-radius:10px;background:#fff;display:flex;align-items:center;
+  justify-content:center;font-size:17px;flex:none;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.cred-steps b{font-size:13px;font-weight:700;color:var(--ink);display:block;margin-bottom:2px}
+.cred-steps p{font-size:11.5px;color:var(--muted);margin:0;line-height:1.4}
+
+.cred-actions{display:flex;flex-direction:column;gap:9px}
+.cred-cta{width:100%;height:44px;border-radius:12px;font:inherit;font-size:13.5px;font-weight:700;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:.18s;border:none}
+.cred-cta svg{width:16px;height:16px;flex:none}
+.cred-cta.primary{background:var(--navy);color:#fff;box-shadow:0 2px 8px rgba(10,28,60,.2)}
+.cred-cta.primary:hover{background:var(--navy-deep)}
+.cred-cta.secondary{background:var(--paper-2);color:var(--text);border:1px solid var(--line)}
+.cred-cta.secondary:hover{border-color:var(--navy);color:var(--navy)}
+
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 @media (max-width:760px){body{padding:12px 0;gap:18px}.rail{width:340px;order:2}
   .phone{width:100%;max-width:394px;height:92vh;border-radius:30px;box-shadow:0 0 0 7px #071a35}}
@@ -479,6 +523,65 @@ h1,h2,h3,.disp{font-family:"Sora",sans-serif}
   <nav class="tabs" id="tabs"></nav>
   <div class="scrim" id="scrim"></div>
   <div class="sheet" id="sheet"></div>
+  <div class="scrim" id="credScrim"></div>
+  <div class="sheet cred-sheet" id="credSheet">
+    <div class="grab"></div>
+    <div class="cred-head">
+      <div class="cred-title-wrap">
+        <div class="cred-icon">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 5 13h6l-1 9 8-11h-6z"/></svg>
+        </div>
+        <div>
+          <h3>Con Credits</h3>
+          <p>Earn by referring &bull; Unlock site leads</p>
+        </div>
+      </div>
+      <button class="cred-close" id="credCloseBtn" aria-label="Close">&times;</button>
+    </div>
+    
+    <div class="cred-balance-card">
+      <div class="cb-top">
+        <span class="cb-label">AVAILABLE BALANCE</span>
+        <span class="cb-tag">⚡ Active</span>
+      </div>
+      <div class="cb-num">
+        <span class="cb-val">250</span>
+        <span class="cb-unit">Con Creds</span>
+      </div>
+      <div class="cb-equiv">≈ <b>5 Lead Unlocks</b> ready to use</div>
+    </div>
+
+    <div class="cred-body">
+      <h4>How Con Credits Work</h4>
+      <ul class="cred-steps">
+        <li>
+          <span class="step-icon">👥</span>
+          <div>
+            <b>Earn by Referring</b>
+            <p>Share your link with contractors & builders. Get <b>+50 Con Creds</b> per verified signup.</p>
+          </div>
+        </li>
+        <li>
+          <span class="step-icon">🔓</span>
+          <div>
+            <b>Unlock Direct Site Leads</b>
+            <p>Use credits to reveal client numbers, site drawings & RFQ specifications.</p>
+          </div>
+        </li>
+      </ul>
+    </div>
+
+    <div class="cred-actions">
+      <button class="cred-cta primary" id="referBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+        Refer & Earn (+50 Creds)
+      </button>
+      <button class="cred-cta secondary" id="redeemBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        Redeem & Learn More
+      </button>
+    </div>
+  </div>
   <div id="toast"></div>
   <div class="home-ind"></div>
 </main>
@@ -875,8 +978,27 @@ function openSheet(){
     LOCS.map((l,i)=>'<button class="locrow'+(S.loc&&S.loc[0]===l[0]?' sel':'')+'" data-loc="'+i+'"><span class="ic">'+I.loc+'</span><span><span class="n">'+esc(l[0])+'</span><span class="c">'+esc(l[1])+'</span></span></button>').join('');
   $('#scrim').classList.add('on');$('#sheet').classList.add('on');}
 function closeSheet(){$('#scrim').classList.remove('on');$('#sheet').classList.remove('on');}
+function openCredModal(){$('#credScrim').classList.add('on');$('#credSheet').classList.add('on');}
+function closeCredModal(){$('#credScrim').classList.remove('on');$('#credSheet').classList.remove('on');}
 
 document.addEventListener('click',e=>{
+  if(e.target.closest('.boltbtn') || e.target.closest('#credBtn')){openCredModal();return;}
+  if(e.target.id==='credScrim' || e.target.closest('#credCloseBtn')){closeCredModal();return;}
+  if(e.target.closest('#referBtn')){
+    try{
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText('https://conos.app/ref/RA7821');
+      }
+    }catch(_){}
+    toast('Referral link copied! Share to earn +50 Con Creds per join.');
+    closeCredModal();
+    return;
+  }
+  if(e.target.closest('#redeemBtn')){
+    toast('250 Con Creds available! Select any listing to unlock direct contact numbers.');
+    closeCredModal();
+    return;
+  }
   if(e.target.closest('#locBtn')){openSheet();return;}
   if(e.target.id==='scrim'){closeSheet();return;}
   const lr=e.target.closest('[data-loc]'); if(lr){setLoc(LOCS[+lr.dataset.loc],true);closeSheet();render();return;}
