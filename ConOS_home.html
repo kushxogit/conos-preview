@@ -419,6 +419,38 @@ h1,h2,h3,.disp{font-family:"Sora",sans-serif}
 .note b{color:var(--navy);font-weight:700}
 .empty{text-align:center;padding:36px 18px;color:var(--muted);font-size:13.5px;line-height:1.6}
 
+/* Category Page View Header, Sort Toolbar & Sub-category Bar */
+.catpage-head{padding:14px 18px 4px;background:var(--surface);border-bottom:1px solid var(--line-2);margin-bottom:10px}
+.cat-nav-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+.cat-back{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;color:var(--navy);
+  background:#fff;border:1px solid var(--line);border-radius:10px;padding:6px 13px;cursor:pointer;
+  box-shadow:0 1px 3px rgba(10,27,51,.06);transition:.15s}
+.cat-back:hover{background:var(--navy);color:#fff;border-color:var(--navy)}
+.cat-back svg{width:14px;height:14px;flex:none}
+.cat-count-badge{font-family:"IBM Plex Mono",monospace;font-size:11px;font-weight:700;color:var(--emerald);
+  background:var(--em-50);border:1px solid var(--em-200);padding:3px 9px;border-radius:99px}
+
+.cat-title-block{margin-bottom:14px}
+.cat-title-block h2{font-family:"Sora",sans-serif;font-size:20px;font-weight:700;letter-spacing:-.5px;color:var(--ink);margin:0}
+.cat-title-block p{font-size:12px;color:var(--muted);margin:3px 0 0;line-height:1.35;font-weight:500}
+
+.subcat-bar{display:flex;gap:7px;overflow-x:auto;scrollbar-width:none;padding-bottom:10px;margin-bottom:10px}
+.subcat-bar::-webkit-scrollbar{display:none}
+.subchip{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:600;color:var(--muted);
+  background:#fff;border:1px solid var(--line);border-radius:10px;padding:6px 12px;cursor:pointer;white-space:nowrap;flex:none;transition:.15s}
+.subchip small{color:var(--faint);font-size:10px;font-weight:400}
+.subchip:hover{border-color:var(--navy);color:var(--navy)}
+.subchip.on{background:var(--navy);color:#fff;border-color:var(--navy);font-weight:700}
+.subchip.on small{color:rgba(255,255,255,.75)}
+
+.sort-bar{display:flex;align-items:center;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:10px;margin-bottom:8px}
+.sort-bar::-webkit-scrollbar{display:none}
+.sort-lbl{font-size:11px;font-weight:700;color:var(--faint);text-transform:uppercase;letter-spacing:.06em;flex:none;margin-right:2px}
+.sort-pill{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:600;color:var(--muted);
+  background:#fff;border:1px solid var(--line);border-radius:99px;padding:5px 12px;cursor:pointer;white-space:nowrap;flex:none;transition:.15s}
+.sort-pill:hover{border-color:var(--navy);color:var(--navy)}
+.sort-pill.on{background:var(--navy);color:#fff;border-color:var(--navy);font-weight:700;box-shadow:0 2px 6px rgba(10,28,60,.15)}
+
 /* tab bar */
 .tabs{flex:none;display:flex;border-top:1px solid var(--line-2);background:#fff;padding:8px 0 10px}
 .tabs button{flex:1;font:inherit;border:none;background:none;cursor:pointer;padding:4px 0;
@@ -719,7 +751,7 @@ const LIST=[
  {n:'Apex Subcontractors',own:'Mohan Lal',t:'Scaffolding & Props',cat:'machine',ic:'scaf',img:'img/scaffold.jpg',km:22.5,tier:1,score:28,vj:1,rv:0,stars:3.2,crew:4,lo:350,hi:500,u:'day',basis:'Per frame, per day',av:'From 20 Sep',yrs:2}
 ];
 
-const S={filter:null,sub:null,q:'',qf:[],saved:[],paused:false,loc:null};
+const S={filter:null,sub:null,q:'',qf:[],saved:[],paused:false,loc:null,sort:'score'};
 
 /* avatar monogram on brand gradient */
 function avatar(name,verified){
@@ -776,9 +808,15 @@ function scoreBar(r){
 function visible(){
   const q=(S.sub||S.q).trim().toLowerCase();
   const qs=S.qf.map(k=>QFILT.find(x=>x.k===k)).filter(Boolean);
-  return LIST.filter(r=>(!S.filter||r.cat===S.filter)&&
+  let res = LIST.filter(r=>(!S.filter||r.cat===S.filter)&&
     (!q||(r.n+' '+r.t+' '+r.basis).toLowerCase().includes(q.split(' ')[0]))&&
     qs.every(x=>x.f(r)));
+  if(S.sort==='near') res.sort((a,b)=>a.km-b.km);
+  else if(S.sort==='rate') res.sort((a,b)=>a.lo-b.lo);
+  else if(S.sort==='stars') res.sort((a,b)=>b.stars-a.stars);
+  else if(S.sort==='exp') res.sort((a,b)=>b.yrs-a.yrs);
+  else res.sort((a,b)=>(b.score||0)-(a.score||0));
+  return res;
 }
 
 function tile(c){
@@ -842,30 +880,62 @@ function partnerBlock(){
 
 function render(){
   const rows=visible(),c=S.filter&&CATS.find(x=>x.k===S.filter);
-  const isFiltered = !!(S.filter || S.sub || S.q || S.qf.length);
-  const heading = S.sub ? S.sub : (c ? c.name : 'Category Listings');
+  const isCategoryView = !!(S.filter || S.sub || S.q);
 
-  const cardsContent = isFiltered
-    ? '<div class="sec" id="catListingsSec"><h2>'+esc(heading)+'</h2><span class="r">'+rows.length+' listed</span></div>'+
-      (rows.length ? rows.map(card).join('')
-       : '<div class="empty">Nothing matched that filter.<br>ConOS shows the gap rather than padding the page.<br><button class="chip" data-clear style="margin-top:14px">Clear all filters</button></div>')
-    : '<div class="note" style="margin-top:16px"><b>Select any category above</b> to view verified contractors, equipment rentals, and material suppliers.</div>';
-
-  $('#scroll').innerHTML=
-  '<div class="chips">'+QFILT.map(x=>'<button class="chip" data-qf="'+x.k+'" aria-pressed="'+(S.qf.indexOf(x.k)>=0)+'">'+I[x.ic]+esc(x.t)+'</button>').join('')+'</div>'+
-  '<div class="tstack" id="tstack">'+
-    '<button class="trust tface front" data-go="'+esc(TRUST[0][1])+'">'+tfaceInner(TRUST[0])+'</button>'+
-    '<button class="trust tface" data-go="'+esc(TRUST[1][1])+'">'+tfaceInner(TRUST[1])+'</button></div>'+
-  '<div class="sec"><h2>What do you need?</h2>'+(isFiltered?'<button data-clear>Show all categories</button>':'<span class="r">Tap category to view</span>')+'</div>'+
-  '<div class="tiles">'+CATS.map(tile).join('')+'</div>'+
-  '<p class="hintline">Captions cycle to show real work in each category. Tap a tile to open category listings.</p>'+
-  '<div class="sec"><h2>Hire professionals</h2><span class="r">56 professions</span></div>'+
-  '<div class="prow">'+PROS.map(p=>'<button class="pro" data-go="'+esc(p.t)+'"><span class="pimg" style="background:'+p.grad+'">'+
-    (p.img?'<img src="'+p.img+'" alt="'+esc(p.t)+'" loading="lazy"><span class="veil"></span>':'<span class="art">'+SI[p.ic]+'</span>')+
-    '</span><span class="pt">'+esc(p.t)+'</span><span class="ps">'+esc(p.s)+'</span><span class="pe">'+esc(p.e)+'</span></button>').join('')+'</div>'+
-  cardsContent+
-  partnerBlock();
-  $('#tabs').innerHTML=[['Home','home',1],['Projects','proj',0],['Leads','brief',0],['Messages','chat',0],['More','more',0]]
+  if(isCategoryView){
+    const heading = S.sub ? S.sub : (c ? c.name : 'Category Listings');
+    const subList = c ? c.subs : [];
+    $('#scroll').innerHTML=
+      '<div class="catpage-head">'+
+        '<div class="cat-nav-row">'+
+          '<button class="cat-back" data-clear>'+
+            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>'+
+            '<span>Back to Home</span>'+
+          '</button>'+
+          '<span class="cat-count-badge">'+rows.length+' listed</span>'+
+        '</div>'+
+        '<div class="cat-title-block">'+
+          '<h2>'+esc(heading)+'</h2>'+
+          '<p>Verified trade contractors, equipment rentals & material suppliers in Gurugram NCR</p>'+
+        '</div>'+
+        (subList.length ?
+          '<div class="subcat-bar">'+
+            '<button class="subchip'+(!S.sub?' on':'')+'" data-clearcat="'+(c?c.k:'')+'">All '+esc(c?c.short:'')+'</button>'+
+            subList.map(s=>'<button class="subchip'+(S.sub===s[0]?' on':'')+'" data-sub="'+esc(s[0])+'" data-subcat="'+c.k+'">'+esc(s[0])+' <small>('+s[2]+')</small></button>').join('')+
+          '</div>': '')+
+        '<div class="sort-bar">'+
+          '<span class="sort-lbl">Sort:</span>'+
+          '<button class="sort-pill'+(S.sort==='score'?' on':'')+'" data-sort="score">Score 🏆</button>'+
+          '<button class="sort-pill'+(S.sort==='near'?' on':'')+'" data-sort="near">Nearest 📍</button>'+
+          '<button class="sort-pill'+(S.sort==='stars'?' on':'')+'" data-sort="stars">Rating ⭐</button>'+
+          '<button class="sort-pill'+(S.sort==='rate'?' on':'')+'" data-sort="rate">Price 💸</button>'+
+        '</div>'+
+        '<div class="chips" style="padding:0 0 6px">'+
+          QFILT.map(x=>'<button class="chip" data-qf="'+x.k+'" aria-pressed="'+(S.qf.indexOf(x.k)>=0)+'">'+I[x.ic]+esc(x.t)+'</button>').join('')+
+        '</div>'+
+      '</div>'+
+      '<div class="cat-listings-stream">'+
+        (rows.length ? rows.map(card).join('')
+         : '<div class="empty">Nothing matched that filter.<br>ConOS shows the gap rather than padding the page.<br><button class="chip" data-clear style="margin-top:14px">Clear all filters</button></div>')+
+      '</div>';
+    $('#scroll').scrollTop = 0;
+  }else{
+    $('#scroll').innerHTML=
+    '<div class="chips">'+QFILT.map(x=>'<button class="chip" data-qf="'+x.k+'" aria-pressed="'+(S.qf.indexOf(x.k)>=0)+'">'+I[x.ic]+esc(x.t)+'</button>').join('')+'</div>'+
+    '<div class="tstack" id="tstack">'+
+      '<button class="trust tface front" data-go="'+esc(TRUST[0][1])+'">'+tfaceInner(TRUST[0])+'</button>'+
+      '<button class="trust tface" data-go="'+esc(TRUST[1][1])+'">'+tfaceInner(TRUST[1])+'</button></div>'+
+    '<div class="sec"><h2>What do you need?</h2><span class="r">Tap a category to open</span></div>'+
+    '<div class="tiles">'+CATS.map(tile).join('')+'</div>'+
+    '<p class="hintline">Captions cycle to show real work in each category. Tap a category tile to view listings & sort.</p>'+
+    '<div class="sec"><h2>Hire professionals</h2><span class="r">56 professions</span></div>'+
+    '<div class="prow">'+PROS.map(p=>'<button class="pro" data-go="'+esc(p.t)+'"><span class="pimg" style="background:'+p.grad+'">'+
+      (p.img?'<img src="'+p.img+'" alt="'+esc(p.t)+'" loading="lazy"><span class="veil"></span>':'<span class="art">'+SI[p.ic]+'</span>')+
+      '</span><span class="pt">'+esc(p.t)+'</span><span class="ps">'+esc(p.s)+'</span><span class="pe">'+esc(p.e)+'</span></button>').join('')+'</div>'+
+    '<div class="note" style="margin-top:16px"><b>Select any category above</b> to open dedicated category page, sort by score, price or distance, and filter verified contractors.</div>'+
+    partnerBlock();
+  }
+  $('#tabs').innerHTML=[['Home','home',!isCategoryView],['Categories','grid',isCategoryView],['Leads','brief',0],['Messages','chat',0],['More','more',0]]
     .map(t=>'<button class="'+(t[2]?'on':'')+'" data-go="'+t[0]+'">'+I[t[1]]+'<span>'+t[0]+'</span></button>').join('');
   syncSearch();cycle();startTrust();observeCards();
 }
@@ -1069,7 +1139,21 @@ document.addEventListener('click',e=>{
     }
     return;
   }
-  if(e.target.closest('[data-clear]')){S.filter=null;S.q='';S.sub=null;S.qf=[];render();return;}
+  const st=e.target.closest('[data-sort]');
+  if(st){
+    S.sort=st.dataset.sort;
+    render();
+    const sortLabels={score:'ConOS Score 🏆',near:'Nearest location 📍',stars:'Top Rating ⭐',rate:'Lowest Price 💸'};
+    toast('Sorted by '+(sortLabels[S.sort]||S.sort));
+    return;
+  }
+  const cc=e.target.closest('[data-clearcat]');
+  if(cc){
+    S.sub=null;S.q='';
+    render();
+    return;
+  }
+  if(e.target.closest('[data-clear]')){S.filter=null;S.q='';S.sub=null;S.qf=[];S.sort='score';render();return;}
   const tr=e.target.closest('[data-try]');
   if(tr){const v=tr.dataset.try;
     if(v==='clear'){S.q='';S.filter=null;S.sub=null;S.qf=[];render();}
