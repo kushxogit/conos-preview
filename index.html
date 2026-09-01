@@ -327,37 +327,37 @@ h1,h2,h3,.disp{font-family:"Sora",sans-serif}
 .lav.soon{color:var(--cyan-700)}
 
 /* ConOS Trust Score — signature data object with liquid fill, cyan meniscus, glitter and shimmer from Design B */
-.scoreblock{margin-top:10px;margin-bottom:2px}
-.scorehd{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:6px}
-.scorehd .lab{font-size:12.5px;font-weight:500;color:var(--muted);display:flex;align-items:baseline;gap:5px}
+.scoreblock{margin-top:9px;margin-bottom:2px}
+.scorehd{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:5px}
+.scorehd .lab{font-size:12px;font-weight:500;color:var(--muted);display:flex;align-items:baseline;gap:5px}
 .scorehd .wm{font-size:13.5px;letter-spacing:-.4px;color:var(--navy)}
 .scorehd .wm b{font-weight:700}.scorehd .wm em{font-weight:400;font-style:normal}
+.scorehd .score-meta{display:flex;align-items:baseline;gap:5px;font-size:12px}
+.scorehd .score-meta .tc-val{font-family:"IBM Plex Mono",monospace;font-size:12px;font-weight:700;color:var(--ink)}
+.scorehd .score-meta s{font-family:"IBM Plex Mono",monospace;text-decoration:none;font-size:9px;color:var(--faint)}
+.scorehd .score-meta .sep{color:var(--line);font-size:10px}
 .scorehd .band{font-size:11.5px;font-weight:700;letter-spacing:.02em}
-.scorebar{position:relative;height:12px;border-radius:99px;background:#E9EEF6;
-  box-shadow:inset 0 1px 2px rgba(13,27,51,.10),inset 0 0 0 1px #DCE4F0;overflow:hidden}
+
+.scorebar{position:relative;height:6px;border-radius:99px;background:#E9EEF6;
+  box-shadow:inset 0 1px 1.5px rgba(13,27,51,.10);overflow:hidden}
 .scorebar>i{position:absolute;left:0;top:0;bottom:0;border-radius:99px;display:block;overflow:hidden;
-  box-shadow:inset -2px 0 0 0 #00D9FF, 0 0 8px rgba(0,217,255,.35);
+  box-shadow:inset -1.5px 0 0 0 #00D9FF, 0 0 7px rgba(0,217,255,.45);
   animation:fillup 1.15s cubic-bezier(.34,.9,.3,1) both}
 @keyframes fillup{from{width:0 !important}}
-/* liquid surface: a lighter meniscus along the top, a darker settle at the base */
+/* liquid surface: light sheen */
 .scorebar>i::before{content:"";position:absolute;inset:0;border-radius:99px;
-  background:linear-gradient(180deg,rgba(255,255,255,.34) 0%,rgba(255,255,255,.10) 42%,
-    rgba(255,255,255,0) 58%,rgba(0,0,0,.10) 100%)}
-/* glitter: a slow sheen travelling through the liquid */
+  background:linear-gradient(180deg,rgba(255,255,255,.40) 0%,rgba(255,255,255,0) 100%)}
+/* glitter: slow sheen travelling through the liquid */
 .scorebar>i::after{content:"";position:absolute;top:0;bottom:0;width:52%;
-  background:linear-gradient(105deg,transparent 20%,rgba(255,255,255,.62) 50%,transparent 80%);
+  background:linear-gradient(105deg,transparent 20%,rgba(255,255,255,.75) 50%,transparent 80%);
   animation:sheen 3.6s cubic-bezier(.45,0,.35,1) 1.2s infinite}
 @keyframes sheen{0%{left:-55%}55%{left:105%}100%{left:105%}}
 .glit{position:absolute;inset:0;pointer-events:none}
-.glit b{position:absolute;width:2.2px;height:2.2px;border-radius:50%;background:#fff;opacity:0;
-  box-shadow:0 0 3px rgba(255,255,255,.95);animation:twinkle 2.6s ease-in-out infinite}
-@keyframes twinkle{0%,68%,100%{opacity:0;transform:scale(.5)}78%{opacity:1;transform:scale(1.15)}88%{opacity:.25;transform:scale(.7)}}
-.scorebar .num{position:absolute;top:0;bottom:0;display:flex;align-items:center;gap:1px;z-index:3;
-  font-family:"IBM Plex Mono",monospace;font-size:10px;font-weight:700;color:#fff;letter-spacing:-.3px;
-  text-shadow:0 1px 2px rgba(13,27,51,.35);transition:left .8s cubic-bezier(.34,.9,.3,1);line-height:12px}
-.scorebar .num s{text-decoration:none;font-size:8px;opacity:.8;font-weight:500}
+.glit b{position:absolute;width:1.8px;height:1.8px;border-radius:50%;background:#fff;opacity:0;
+  box-shadow:0 0 3px rgba(255,255,255,1);animation:twinkle 2.6s ease-in-out infinite}
+@keyframes twinkle{0%,68%,100%{opacity:0;transform:scale(.5)}78%{opacity:1;transform:scale(1.3)}88%{opacity:.25;transform:scale(.7)}}
 .scorebar.none{background:#F2F5F9;box-shadow:inset 0 0 0 1px var(--line)}
-.scorenote{font-size:11px;color:var(--faint);margin-top:5px;display:flex;justify-content:space-between;gap:8px}
+.scorenote{font-size:10.5px;color:var(--faint);margin-top:5px;display:flex;justify-content:space-between;gap:8px}
 .scorenote b{font-family:"IBM Plex Mono",monospace;color:var(--muted);font-weight:600}
 @media (prefers-reduced-motion:reduce){
   .scorebar>i{animation:none}.scorebar>i::after{animation:none;opacity:0}.glit b{animation:none;opacity:0}}
@@ -610,15 +610,14 @@ function scoreBar(r){
       '<div class="scorenote"><span>No verified activity on ConOS</span></div></div>';
   const col = r.score>=70?'var(--emerald)':(r.score>=55?'var(--cyan-700)':'var(--faint)');
   const bandN = r.score>=85?'Exceptional':r.score>=70?'Strong':r.score>=55?'Moderate':'Building';
-  const w = Math.max(30, r.score);
-  const dots=[[18,32],[34,68],[52,26],[66,72],[80,40],[92,62]]
+  const w = Math.max(8, r.score);
+  const dots=[[18,35],[34,65],[52,30],[66,70],[80,35],[92,60]]
     .map((d,i)=>'<b style="left:'+d[0]+'%;top:'+d[1]+'%;animation-delay:'+(i*0.42+0.9).toFixed(2)+'s"></b>').join('');
   return '<div class="scoreblock">'+
     '<div class="scorehd"><span class="lab">'+WM+' Trust Score</span>'+
-      '<span class="band" style="color:'+col+'">'+bandN+'</span></div>'+
+      '<span class="score-meta"><b class="tc-val">'+r.score+'</b><s>/100</s><span class="sep">·</span><span class="band" style="color:'+col+'">'+bandN+'</span></span></div>'+
     '<div class="scorebar"><i style="width:'+w+'%;background:'+col+'">'+
-      '<span class="glit">'+dots+'</span></i>'+
-      '<span class="num" style="left:calc('+w+'% - 44px)">'+r.score+'<s>/100</s></span></div>'+
+      '<span class="glit">'+dots+'</span></i></div>'+
     '<div class="scorenote"><span>'+(r.vj?'<b>'+r.vj+'</b> verified projects':'Verification in progress')+
       '</span><span>updated <b>Aug 2026</b></span></div></div>';
 }
