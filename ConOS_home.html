@@ -714,7 +714,9 @@ const LIST=[
  {n:'Gurpreet Singh Labour Supply',own:'Gurpreet Singh',t:'General Labour Supply',cat:'labour',ic:'crew',img:'img/shutter.jpg',km:18.3,tier:1,score:null,vj:0,rv:0,stars:0,crew:55,lo:780,hi:1100,u:'day',basis:'Per head, per day',av:'Available now',yrs:5},
  {n:'Metro Infratech',own:'Vikas Sharma',t:'RCC Contractor',cat:'package',ic:'beam',img:'img/slab.jpg',km:7.1,tier:3,score:91,vj:32,rv:26,stars:4.7,crew:120,lo:225,hi:285,u:'sq.ft',basis:'Labour + material · M25',av:'From 1 Oct',yrs:22},
  {n:'Apex Equipment Rentals',own:'Naresh Bhati',t:'Excavator on Hire',cat:'machine',ic:'dig',img:'img/excavator.jpg',km:16.9,tier:2,score:79,vj:14,rv:9,stars:4.6,crew:8,lo:1250,hi:1650,u:'hour',basis:'With operator & diesel',av:'Available now',yrs:12},
- {n:'Trimurti Steel & Cement',own:'Ashok Aggarwal',t:'TMT Bar Fe500D — Dealer',cat:'supply',ic:'rebar',img:'img/tmt.jpg',km:31.4,tier:2,score:82,vj:0,rv:18,stars:4.8,crew:0,lo:58400,hi:63200,u:'MT',basis:'Ex-stockyard · SAIL / Tata',av:'Same-day delivery',yrs:19}
+ {n:'Trimurti Steel & Cement',own:'Ashok Aggarwal',t:'TMT Bar Fe500D — Dealer',cat:'supply',ic:'rebar',img:'img/tmt.jpg',km:31.4,tier:2,score:82,vj:0,rv:18,stars:4.8,crew:0,lo:58400,hi:63200,u:'MT',basis:'Ex-stockyard · SAIL / Tata',av:'Same-day delivery',yrs:19},
+ {n:'Radhe Shyam Labour Services',own:'Radhe Shyam',t:'Finishing & Plaster',cat:'labour',ic:'trowel',img:'img/plaster.jpg',km:14.2,tier:1,score:42,vj:2,rv:1,stars:3.9,crew:8,lo:15,hi:20,u:'sq.ft',basis:'Labour · Single coat',av:'Available now',yrs:3},
+ {n:'Apex Subcontractors',own:'Mohan Lal',t:'Scaffolding & Props',cat:'machine',ic:'scaf',img:'img/scaffold.jpg',km:22.5,tier:1,score:28,vj:1,rv:0,stars:3.2,crew:4,lo:350,hi:500,u:'day',basis:'Per frame, per day',av:'From 20 Sep',yrs:2}
 ];
 
 const S={filter:null,sub:null,q:'',qf:[],saved:[],paused:false,loc:null};
@@ -733,7 +735,7 @@ function verBadge(r){
   if(r.tier>=2) return '<span class="verbadge f2">'+I.shield+'ConOS Verified</span>';
   return '<span class="verbadge f1">Unverified</span>';
 }
-/* ===== ConOS score: the signature object with shimmer & glitter from Design B ===== */
+/* ===== ConOS score: 4-tier color differentiation (Green 75+, Teal 50-74, Amber 35-49, Red <35) ===== */
 function scoreBar(r){
   const WM='<span class="wm"><b>Con</b><em>OS</em></span>';
   if(r.score==null)
@@ -741,19 +743,32 @@ function scoreBar(r){
       ' Trust Score</span><span class="band" style="color:var(--faint)">Not verified yet</span></div>'+
       '<div class="scorebar none"></div>'+
       '<div class="scorenote"><span>No verified activity on ConOS</span></div></div>';
-  const grad = r.score>=85 ? 'linear-gradient(90deg, #047857 0%, #059669 55%, #34D399 100%)' :
-               r.score>=70 ? 'linear-gradient(90deg, #065F46 0%, #047857 60%, #10B981 100%)' :
-               r.score>=55 ? 'linear-gradient(90deg, #047857 0%, #10B981 70%, #6EE7B7 100%)' :
-                             'linear-gradient(90deg, #065F46 0%, #059669 100%)';
-  const textCol = 'var(--emerald)';
-  const bandN = r.score>=85?'Exceptional':r.score>=70?'Strong':r.score>=55?'Moderate':'Building';
-  const w = Math.max(8, r.score);
+  const s = r.score;
+  let grad, textCol, bandN, rimCol, glowCol;
+  if(s>=75){
+    grad='linear-gradient(90deg, #047857 0%, #10B981 60%, #34D399 100%)';
+    textCol='#047857'; rimCol='#34D399'; glowCol='rgba(52,211,153,.55)';
+    bandN=s>=85?'Exceptional':'Strong';
+  }else if(s>=50){
+    grad='linear-gradient(90deg, #0D9488 0%, #14B8A6 60%, #2DD4BF 100%)';
+    textCol='#0D9488'; rimCol='#2DD4BF'; glowCol='rgba(45,212,191,.55)';
+    bandN='Moderate';
+  }else if(s>=35){
+    grad='linear-gradient(90deg, #D97706 0%, #F59E0B 60%, #FBBF24 100%)';
+    textCol='#D97706'; rimCol='#FBBF24'; glowCol='rgba(251,191,36,.55)';
+    bandN='Low Score';
+  }else{
+    grad='linear-gradient(90deg, #DC2626 0%, #EF4444 60%, #F87171 100%)';
+    textCol='#DC2626'; rimCol='#F87171'; glowCol='rgba(248,113,113,.55)';
+    bandN='Critical';
+  }
+  const w = Math.max(8, s);
   const dots=[[18,35],[34,65],[52,30],[66,70],[80,35],[92,60]]
     .map((d,i)=>'<b style="left:'+d[0]+'%;top:'+d[1]+'%;animation-delay:'+(i*0.42+0.9).toFixed(2)+'s"></b>').join('');
   return '<div class="scoreblock">'+
     '<div class="scorehd"><span class="lab">'+WM+' Trust Score</span>'+
-      '<span class="score-meta"><span class="tc-badge"><b>'+r.score+'</b><s>/100</s></span><span class="band" style="color:'+textCol+'">'+bandN+'</span></span></div>'+
-    '<div class="scorebar"><i style="width:'+w+'%;background:'+grad+'">'+
+      '<span class="score-meta"><span class="tc-badge" style="color:'+textCol+';background:'+textCol+'14;border-color:'+textCol+'33"><b>'+s+'</b><s>/100</s></span><span class="band" style="color:'+textCol+'">'+bandN+'</span></span></div>'+
+    '<div class="scorebar"><i style="width:'+w+'%;background:'+grad+';box-shadow:inset -1.5px 0 0 0 '+rimCol+', 0 0 8px '+glowCol+'">'+
       '<span class="glit">'+dots+'</span></i></div>'+
     '<div class="scorenote"><span>'+(r.vj?'<b>'+r.vj+'</b> verified projects':'Verification in progress')+
       '</span><span>updated <b>Aug 2026</b></span></div></div>';
