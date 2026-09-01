@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>ConOS — Find verified work</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#2C5296; --navy-ink:#0D1B33; --blue:#3D6BB3; --slate-blue:#628ECC;
+    --cyan:#00D9FF; --teal:#06B0D9; --mint:#34D399; --emerald:#047857;
+    --paper:#E2E8F0; --paper-soft:#F4F7FA; --surface:#FFFFFF;
+    --text:#0D1B33; --muted:#5C6B85; --faint:#8492A9; --line:#DDE4EE; --line-2:#EDF1F6;
+    --sheet:#EAEEF4;
+    --grad:linear-gradient(135deg,var(--navy) 0%,var(--teal) 62%,var(--cyan) 100%);
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;height:100%;}
+  body{
+    font-family:"Manrope",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    background:radial-gradient(circle at 50% 0%,#233a5e,#0b1220);
+    display:flex;align-items:center;justify-content:center;min-height:100vh;
+    -webkit-font-smoothing:antialiased;color:var(--text);padding:20px;
+  }
+  h1,h2,h3,.disp{font-family:"Sora",sans-serif;}
+
+  /* ---------- Phone frame ---------- */
+  .phone{
+    position:relative;width:390px;height:844px;max-height:calc(100vh - 24px);
+    background:var(--surface);border-radius:52px;overflow:hidden;
+    box-shadow:0 0 0 12px #0d1526,0 0 0 14px #24314b,0 40px 90px rgba(0,0,0,.6);
+  }
+  .notch{position:absolute;top:12px;left:50%;transform:translateX(-50%);
+    width:120px;height:32px;background:#0d1526;border-radius:20px;z-index:60;}
+  .statusbar{position:absolute;top:0;left:0;right:0;height:54px;z-index:55;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:18px 30px 0;font-size:14px;font-weight:700;color:var(--text);pointer-events:none;}
+  .statusbar .r{display:flex;gap:6px;align-items:center;}
+  .app{position:absolute;inset:0;border-radius:52px;overflow:hidden;}
+  .scene{position:absolute;inset:0;display:flex;flex-direction:column;}
+
+  /* ===================== HOME ===================== */
+  .home-scroll{flex:1;overflow-y:auto;padding-top:60px;scrollbar-width:none;background:#fff;}
+  .home-scroll::-webkit-scrollbar{display:none;}
+  .home-brand{display:flex;align-items:center;justify-content:space-between;padding:2px 20px 12px;}
+  .hb-logo{display:flex;align-items:center;gap:9px;}
+  .hb-tile{width:34px;height:34px;border-radius:10px;background:var(--grad);display:flex;align-items:center;justify-content:center;
+    box-shadow:0 6px 14px rgba(44,82,150,.28);}
+  .hb-tile svg{width:18px;height:18px;}
+  .hb-wm{font-family:"IBM Plex Sans",sans-serif;font-size:20px;font-weight:700;letter-spacing:-.4px;color:var(--navy);}
+  .hb-wm span{color:var(--cyan);}
+  .hb-av{width:36px;height:36px;border-radius:50%;background:var(--paper-soft);border:1px solid var(--line);
+    display:flex;align-items:center;justify-content:center;color:var(--navy);}
+
+  .search-pill{margin:4px 20px 14px;height:58px;border-radius:999px;background:#fff;
+    border:1px solid var(--line);box-shadow:0 4px 14px rgba(44,82,150,.10),0 1px 3px rgba(13,27,51,.06);
+    display:flex;align-items:center;gap:12px;padding:0 20px;cursor:pointer;transition:transform .15s ease,box-shadow .15s ease;}
+  .search-pill:active{transform:scale(.985);}
+  .search-pill .mag{width:34px;height:34px;border-radius:50%;background:var(--grad);display:flex;align-items:center;justify-content:center;flex:0 0 auto;}
+  .search-pill .mag svg{width:16px;height:16px;}
+  .sp-txt .m{font-weight:700;font-size:14.5px;letter-spacing:-.2px;}
+  .sp-txt .s{font-size:11.5px;color:var(--muted);margin-top:1px;}
+
+  .home-cats{display:flex;gap:24px;padding:2px 20px 12px;overflow-x:auto;border-bottom:1px solid var(--line-2);scrollbar-width:none;}
+  .home-cats::-webkit-scrollbar{display:none;}
+  .hc{display:flex;flex-direction:column;align-items:center;gap:7px;flex:0 0 auto;padding-bottom:11px;margin-bottom:-13px;
+    color:var(--faint);font-size:12px;font-weight:700;cursor:pointer;border-bottom:2.5px solid transparent;}
+  .hc svg{width:24px;height:24px;}
+  .hc.on{color:var(--text);border-bottom-color:var(--navy);}
+  .hc.on svg{color:var(--navy);}
+
+  .feed-h{font-family:"Sora";font-size:18px;font-weight:700;letter-spacing:-.3px;margin:20px 20px 4px;
+    display:flex;align-items:center;justify-content:space-between;}
+  .feed-h .see{font-family:"Manrope";font-size:12px;font-weight:700;color:var(--teal);}
+  .feed-sub{font-size:12.5px;color:var(--muted);margin:0 20px 12px;}
+  .feed{display:flex;flex-direction:column;gap:12px;padding:0 20px 20px;}
+  .fcard{border:1px solid var(--line);border-radius:18px;padding:14px;background:#fff;box-shadow:0 3px 10px rgba(44,82,150,.05);cursor:pointer;transition:transform .12s;}
+  .fcard:active{transform:scale(.99);}
+  .fcard .top{display:flex;align-items:flex-start;gap:12px;}
+  .fcard .ic{width:46px;height:46px;flex:0 0 auto;border-radius:13px;background:rgba(44,82,150,.08);color:var(--navy);
+    display:flex;align-items:center;justify-content:center;}
+  .fcard .ic svg{width:24px;height:24px;}
+  .fcard .bd{flex:1;min-width:0;}
+  .fcard .nm{font-size:15px;font-weight:700;letter-spacing:-.2px;display:flex;align-items:center;gap:8px;}
+  .fcard .rt{font-family:"IBM Plex Sans";font-size:12px;font-weight:600;color:var(--navy);white-space:nowrap;}
+  .fcard .meta{font-size:12px;color:var(--muted);margin-top:3px;}
+  .fcard .tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;}
+  .fcard .tag{font-size:11px;color:var(--muted);background:var(--paper-soft);border:1px solid var(--line-2);border-radius:7px;padding:3px 8px;}
+  .vbadge{display:inline-flex;align-items:center;gap:4px;font-family:"IBM Plex Sans";font-size:9px;font-weight:600;letter-spacing:.06em;
+    text-transform:uppercase;color:var(--emerald);background:rgba(4,120,87,.09);border:1px solid rgba(4,120,87,.28);border-radius:99px;padding:2px 7px;}
+  .vbadge svg{width:9px;height:9px;}
+
+  /* bottom tab bar */
+  .tabbar{height:72px;border-top:1px solid var(--line-2);background:#fff;display:flex;align-items:flex-start;justify-content:space-around;padding-top:10px;}
+  .tabbar .tb{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:10.5px;font-weight:700;color:var(--faint);}
+  .tabbar .tb svg{width:21px;height:21px;}
+  .tabbar .tb.on{color:var(--navy);}
+
+  /* ===================== RESULTS ===================== */
+  .res-head{padding:60px 16px 12px;background:#fff;border-bottom:1px solid var(--line-2);}
+  .res-pill{display:flex;align-items:center;gap:12px;border:1px solid var(--line);border-radius:999px;padding:10px 16px;
+    box-shadow:0 3px 10px rgba(44,82,150,.08);cursor:pointer;}
+  .res-pill .mag{width:30px;height:30px;border-radius:50%;background:var(--grad);display:flex;align-items:center;justify-content:center;flex:0 0 auto;}
+  .res-pill .mag svg{width:14px;height:14px;}
+  .res-pill .m{font-weight:700;font-size:14px;letter-spacing:-.2px;line-height:1.2;}
+  .res-pill .s{font-size:11.5px;color:var(--muted);margin-top:1px;}
+  .res-scroll{flex:1;overflow-y:auto;background:var(--paper-soft);scrollbar-width:none;}
+  .res-scroll::-webkit-scrollbar{display:none;}
+  .res-count{font-size:13px;color:var(--muted);padding:14px 20px 4px;}
+  .res-count b{color:var(--text);font-weight:700;}
+  .res-list{display:flex;flex-direction:column;gap:12px;padding:8px 20px 24px;}
+
+  /* ===================== SEARCH SHEET ===================== */
+  /* Sheet unrolls DOWN from the search bar (top-down clip reveal), not from the bottom */
+  .sheet{position:absolute;inset:0;z-index:40;background:var(--sheet);display:flex;flex-direction:column;
+    transform-origin:top center;clip-path:inset(0 0 100% 0);
+    transition:clip-path .5s cubic-bezier(.32,.72,0,1);pointer-events:none;}
+  .sheet.open{clip-path:inset(0 0 0 0);pointer-events:auto;}
+  /* cards ease in with a light stagger so the panel feels like it grows outward */
+  .sheet .card{transform:translateY(10px);opacity:0;
+    transition:transform .45s cubic-bezier(.32,.72,0,1),opacity .4s ease,box-shadow .3s ease;}
+  .sheet.open .card{transform:none;opacity:1;}
+  .sheet.open #card-where{transition-delay:.06s;}
+  .sheet.open #card-when{transition-delay:.12s;}
+  @media (prefers-reduced-motion:reduce){.sheet,.sheet .card{transition:none!important;}}
+
+  .sheet-head{position:relative;padding:56px 20px 0;flex:0 0 auto;}
+  .sh-top{display:flex;align-items:center;gap:14px;margin-bottom:14px;}
+  .sh-close{width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:#fff;
+    display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 1px 4px rgba(13,27,51,.08);flex:0 0 auto;}
+  .sh-close svg{width:14px;height:14px;color:var(--text);}
+  .sh-title{font-family:"Sora";font-size:19px;font-weight:700;letter-spacing:-.4px;}
+  .sh-tabs{display:flex;gap:22px;border-bottom:1px solid var(--line);overflow-x:auto;scrollbar-width:none;padding-bottom:0;}
+  .sh-tabs::-webkit-scrollbar{display:none;}
+  .sh-tab{font-size:14px;font-weight:700;color:var(--faint);padding:6px 0 12px;cursor:pointer;white-space:nowrap;
+    border-bottom:2.5px solid transparent;margin-bottom:-1px;transition:color .15s;}
+  .sh-tab.on{color:var(--text);border-bottom-color:var(--navy);}
+
+  .sheet-body{flex:1;overflow-y:auto;padding:16px 14px 20px;scrollbar-width:none;}
+  .sheet-body::-webkit-scrollbar{display:none;}
+
+  .card{background:#fff;border-radius:24px;margin:0 4px 14px;box-shadow:0 2px 8px rgba(44,82,150,.06);
+    overflow:hidden;transition:box-shadow .3s ease;}
+  .card.active{box-shadow:0 10px 30px rgba(44,82,150,.13);}
+  .card-head{width:100%;background:transparent;border:none;cursor:pointer;font-family:inherit;padding:20px 22px;text-align:left;color:var(--text);}
+  .head-collapsed{display:flex;align-items:center;justify-content:space-between;gap:12px;}
+  .hc-label{font-size:14px;color:var(--muted);font-weight:700;}
+  .hc-val{font-size:14px;color:var(--text);font-weight:700;letter-spacing:-.2px;text-align:right;}
+  .hc-val.placeholder{color:var(--faint);font-weight:600;}
+  .head-open{font-family:"Sora";font-size:22px;font-weight:700;letter-spacing:-.4px;margin:0;display:none;}
+  .card.active .head-collapsed{display:none;}
+  .card.active .head-open{display:block;}
+  .card.active .card-head{padding-bottom:8px;}
+
+  .card-body{display:grid;grid-template-rows:0fr;transition:grid-template-rows .42s cubic-bezier(.4,0,.2,1),opacity .3s ease;opacity:0;}
+  .card.active .card-body{grid-template-rows:1fr;opacity:1;}
+  .card-body>.cb-inner{overflow:hidden;min-height:0;}
+  .cb-pad{padding:4px 22px 24px;}
+
+  /* WHAT WORK */
+  .work-input{position:relative;margin-bottom:20px;}
+  .work-input input{width:100%;font:inherit;font-size:15px;font-weight:500;padding:16px 16px 16px 46px;
+    border:1.5px solid var(--line);border-radius:16px;background:#fff;color:var(--text);outline:none;
+    box-shadow:0 1px 4px rgba(13,27,51,.04);transition:border-color .15s,box-shadow .15s;}
+  .work-input input::placeholder{color:var(--faint);font-weight:500;}
+  .work-input input:focus{border-color:var(--cyan);box-shadow:0 0 0 4px rgba(0,217,255,.20);}
+  .work-input .mag{position:absolute;left:16px;top:50%;transform:translateY(-50%);width:18px;height:18px;color:var(--faint);}
+  .pop-label{font-family:"IBM Plex Sans";font-size:10px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--faint);margin:2px 0 10px;}
+  /* keep the list contained so Where & When stay in view; it scrolls internally with a fade hint */
+  #tradeList{max-height:198px;overflow-y:auto;scrollbar-width:none;margin:0 -4px;padding:0 4px;
+    -webkit-mask-image:linear-gradient(to bottom,#000 84%,transparent);mask-image:linear-gradient(to bottom,#000 84%,transparent);}
+  #tradeList::-webkit-scrollbar{display:none;}
+  #tradeList.short{-webkit-mask-image:none;mask-image:none;}
+  .trade{display:flex;align-items:center;gap:14px;padding:11px 4px;cursor:pointer;border-radius:12px;transition:background .12s;}
+  .trade:active{background:var(--paper-soft);}
+  .trade .ti{width:48px;height:48px;flex:0 0 auto;border-radius:13px;background:rgba(44,82,150,.08);color:var(--navy);
+    display:flex;align-items:center;justify-content:center;}
+  .trade .ti svg{width:24px;height:24px;}
+  .trade .tn{font-size:16px;font-weight:700;letter-spacing:-.2px;}
+  .trade .ts{font-size:13px;color:var(--muted);margin-top:2px;}
+  .trade.sel .ti{background:var(--navy);color:#fff;}
+  .no-res{padding:20px 4px;color:var(--muted);font-size:14px;}
+
+  /* WHERE */
+  .chips{display:flex;flex-wrap:wrap;gap:10px;}
+  .chip{font:inherit;font-size:14px;font-weight:600;padding:11px 18px;border:1.5px solid var(--line);background:#fff;color:var(--text);
+    border-radius:99px;cursor:pointer;transition:border-color .15s,background .15s,color .15s;}
+  .chip:active{transform:scale(.97);}
+  .chip.on{background:var(--navy);border-color:var(--navy);color:#fff;box-shadow:0 6px 16px rgba(44,82,150,.22);}
+  .where-search{position:relative;margin-bottom:16px;}
+  .where-search input{width:100%;font:inherit;font-size:14.5px;padding:13px 14px 13px 42px;border:1.5px solid var(--line);
+    border-radius:14px;background:var(--paper-soft);color:var(--text);outline:none;}
+  .where-search input:focus{border-color:var(--cyan);background:#fff;box-shadow:0 0 0 4px rgba(0,217,255,.18);}
+  .where-search svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--faint);}
+
+  /* WHEN */
+  .when-list{display:flex;flex-direction:column;gap:10px;}
+  .when-opt{display:flex;align-items:center;gap:14px;width:100%;font:inherit;text-align:left;background:#fff;
+    border:1.5px solid var(--line);border-radius:15px;padding:14px 16px;cursor:pointer;color:var(--text);transition:border-color .15s,background .15s;}
+  .when-opt:active{transform:scale(.99);}
+  .when-opt .wi{width:40px;height:40px;flex:0 0 auto;border-radius:12px;background:rgba(44,82,150,.08);color:var(--navy);
+    display:flex;align-items:center;justify-content:center;}
+  .when-opt .wi svg{width:20px;height:20px;}
+  .when-opt .wt{font-size:15px;font-weight:700;letter-spacing:-.2px;}
+  .when-opt .wd{font-size:12px;color:var(--muted);margin-top:1px;}
+  .when-opt .mark{margin-left:auto;width:22px;height:22px;flex:0 0 auto;border:1.6px solid var(--line);border-radius:50%;}
+  .when-opt.on{border-color:var(--navy);background:linear-gradient(180deg,rgba(0,217,255,.05),rgba(44,82,150,.03));}
+  .when-opt.on .wi{background:var(--navy);color:#fff;}
+  .when-opt.on .mark{border-color:var(--navy);background:var(--navy);box-shadow:inset 0 0 0 4px #fff;}
+
+  /* footer */
+  .sheet-foot{display:flex;align-items:center;justify-content:space-between;padding:14px 20px 26px;background:#fff;border-top:1px solid var(--line);flex:0 0 auto;}
+  .clear-btn{background:none;border:none;font-family:inherit;font-size:15px;font-weight:700;text-decoration:underline;cursor:pointer;color:var(--text);padding:6px 2px;}
+  .go-btn{display:flex;align-items:center;gap:9px;background:var(--navy);color:#fff;border:none;border-radius:14px;
+    padding:15px 26px;font-size:16px;font-weight:700;letter-spacing:-.2px;cursor:pointer;font-family:inherit;
+    box-shadow:0 8px 20px rgba(44,82,150,.28);transition:transform .12s;}
+  .go-btn:active{transform:scale(.97);}
+  .go-btn svg{width:16px;height:16px;}
+
+  .toast{position:absolute;left:50%;bottom:96px;transform:translateX(-50%) translateY(10px);background:var(--navy-ink);color:#fff;
+    padding:12px 18px;border-radius:12px;font-size:13px;z-index:80;opacity:0;transition:opacity .25s,transform .25s;
+    pointer-events:none;max-width:84%;text-align:center;box-shadow:0 12px 30px rgba(0,0,0,.35);}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  @media (max-width:430px){ body{padding:0;} .phone{border-radius:0;width:100vw;height:100dvh;max-height:none;box-shadow:none;} .app,.phone{border-radius:0;} }
+</style>
+</head>
+<body>
+<div class="phone">
+  <div class="notch"></div>
+  <div class="statusbar"><span>9:41</span>
+    <span class="r">
+      <svg width="17" height="11" viewBox="0 0 16 11"><rect x="0" y="6" width="3" height="5" rx="1" fill="#0D1B33"/><rect x="4.3" y="4" width="3" height="7" rx="1" fill="#0D1B33"/><rect x="8.6" y="1.5" width="3" height="9.5" rx="1" fill="#0D1B33"/><rect x="12.9" y="0" width="3" height="11" rx="1" fill="#0D1B33"/></svg>
+      <svg width="22" height="11" viewBox="0 0 22 11"><rect x=".5" y=".5" width="19" height="10" rx="2.5" stroke="#0D1B33"/><rect x="2" y="2" width="13" height="7" rx="1.2" fill="#0D1B33"/><rect x="20.3" y="3.3" width="1.4" height="4.4" rx=".7" fill="#0D1B33"/></svg>
+    </span>
+  </div>
+
+  <div class="app">
+
+    <!-- ===================== HOME ===================== -->
+    <div class="scene" id="homeScene">
+      <div class="home-scroll">
+        <div class="home-brand">
+          <div class="hb-logo">
+            <div class="hb-tile"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><path d="M3 21h18M5 21V9l7-5 7 5v12M9 21v-6h6v6"/></svg></div>
+            <div class="hb-wm">Con<span>OS</span></div>
+          </div>
+          <div class="hb-av"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></div>
+        </div>
+
+        <div class="search-pill" id="homePill">
+          <div class="mag"><svg viewBox="0 0 16 16" fill="#fff"><path d="M11.74 10.34a6.5 6.5 0 1 0-1.4 1.4l3.85 3.85a1 1 0 0 0 1.42-1.42l-3.85-3.85zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg></div>
+          <div class="sp-txt"><div class="m">Find verified work</div><div class="s">Trades · Companies · Suppliers · Rentals</div></div>
+        </div>
+
+        <div class="home-cats" id="homeCats"></div>
+
+        <div class="feed-h">Popular trades near you <span class="see">See all</span></div>
+        <div class="feed-sub">Verified pros in Gurugram · Sector 56</div>
+        <div class="feed" id="homeFeed"></div>
+      </div>
+
+      <div class="tabbar">
+        <div class="tb on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11.74 10.34a6.5 6.5 0 1 0-1.4 1.4l3.85 3.85a1 1 0 0 0 1.42-1.42l-3.85-3.85zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>Search</div>
+        <div class="tb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 5.6a5.5 5.5 0 0 0-7.8 0L12 6.6l-1-1a5.5 5.5 0 1 0-7.8 7.8l1 1L12 22l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>Saved</div>
+        <div class="tb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v12H5.2L4 17.5z"/></svg>Chats</div>
+        <div class="tb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>Profile</div>
+      </div>
+    </div>
+
+    <!-- ===================== RESULTS ===================== -->
+    <div class="scene" id="resultsScene" style="display:none;">
+      <div class="res-head">
+        <div class="res-pill" id="resPill">
+          <div class="mag"><svg viewBox="0 0 16 16" fill="#fff"><path d="M11.74 10.34a6.5 6.5 0 1 0-1.4 1.4l3.85 3.85a1 1 0 0 0 1.42-1.42l-3.85-3.85zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg></div>
+          <div><div class="m" id="resMain">Plaster</div><div class="s" id="resSub">Sector 56 · Any time</div></div>
+        </div>
+      </div>
+      <div class="res-scroll">
+        <div class="res-count"><b id="resN">6</b> verified pros match your search</div>
+        <div class="res-list" id="resList"></div>
+      </div>
+      <div class="tabbar">
+        <div class="tb on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11.74 10.34a6.5 6.5 0 1 0-1.4 1.4l3.85 3.85a1 1 0 0 0 1.42-1.42l-3.85-3.85zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>Search</div>
+        <div class="tb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 5.6a5.5 5.5 0 0 0-7.8 0L12 6.6l-1-1a5.5 5.5 0 1 0-7.8 7.8l1 1L12 22l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>Saved</div>
+        <div class="tb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v12H5.2L4 17.5z"/></svg>Chats</div>
+        <div class="tb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>Profile</div>
+      </div>
+    </div>
+
+    <!-- ===================== SEARCH SHEET ===================== -->
+    <div class="sheet" id="sheet">
+      <div class="sheet-head">
+        <div class="sh-top">
+          <button class="sh-close" id="sheetClose" aria-label="Close"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 1l12 12M13 1L1 13"/></svg></button>
+          <div class="sh-title">Find verified work</div>
+        </div>
+        <div class="sh-tabs" id="shTabs"></div>
+      </div>
+
+      <div class="sheet-body">
+        <!-- WHAT WORK -->
+        <section class="card active" id="card-what" data-step="what">
+          <button class="card-head">
+            <div class="head-collapsed"><span class="hc-label">What work</span><span class="hc-val placeholder" id="sumWhat">Any trade</span></div>
+            <h2 class="head-open" id="whatTitle">What work</h2>
+          </button>
+          <div class="card-body"><div class="cb-inner"><div class="cb-pad">
+            <div class="work-input">
+              <svg class="mag" viewBox="0 0 16 16" fill="var(--faint)"><path d="M11.74 10.34a6.5 6.5 0 1 0-1.4 1.4l3.85 3.85a1 1 0 0 0 1.42-1.42l-3.85-3.85zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>
+              <input id="workInput" placeholder="Search 333 trades, products and materials" autocomplete="off"/>
+            </div>
+            <div class="pop-label" id="popLabel">Popular right now</div>
+            <div id="tradeList"></div>
+          </div></div></div>
+        </section>
+
+        <!-- WHERE -->
+        <section class="card" id="card-where" data-step="where">
+          <button class="card-head">
+            <div class="head-collapsed"><span class="hc-label">Where</span><span class="hc-val" id="sumWhere">Sector 56, Gurugram</span></div>
+            <h2 class="head-open">Where</h2>
+          </button>
+          <div class="card-body"><div class="cb-inner"><div class="cb-pad">
+            <div class="where-search">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-6.5-7-11a7 7 0 0 1 14 0c0 4.5-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>
+              <input id="whereInput" placeholder="Search area or sector" autocomplete="off"/>
+            </div>
+            <div class="chips" id="whereChips"></div>
+          </div></div></div>
+        </section>
+
+        <!-- WHEN -->
+        <section class="card" id="card-when" data-step="when">
+          <button class="card-head">
+            <div class="head-collapsed"><span class="hc-label">When</span><span class="hc-val placeholder" id="sumWhen">Any time</span></div>
+            <h2 class="head-open">When</h2>
+          </button>
+          <div class="card-body"><div class="cb-inner"><div class="cb-pad">
+            <div class="when-list" id="whenList"></div>
+          </div></div></div>
+        </section>
+      </div>
+
+      <div class="sheet-foot">
+        <button class="clear-btn" id="clearBtn">Clear all</button>
+        <button class="go-btn" id="searchBtn">
+          <svg viewBox="0 0 16 16" fill="#fff"><path d="M11.74 10.34a6.5 6.5 0 1 0-1.4 1.4l3.85 3.85a1 1 0 0 0 1.42-1.42l-3.85-3.85zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>
+          Search
+        </button>
+      </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+  </div>
+</div>
+
+<script>
+/* =========================================================================
+   ConOS — Airbnb-style "Find verified work" search
+   Home pill → bottom-sheet accordion (What work · Where · When) → results
+   Category tabs (All/Trades/Companies/Suppliers/Rentals) reshape "What work".
+   ========================================================================= */
+const $ = s => document.querySelector(s);
+
+/* ---- SVG icon set (stroke, currentColor) ---- */
+const IC = {
+  plaster:'<path d="M12 3l8.5 9L12 21 3.5 12z"/>',
+  bar:'<path d="M4 9h16M4 15h16M9 4v16M15 4v16"/>',
+  shutter:'<rect x="4" y="4" width="16" height="16" rx="2"/><path d="M19 5L5 19"/>',
+  brick:'<rect x="3" y="5" width="18" height="14" rx="1.5"/><path d="M3 12h18M9 5v7M15 12v7"/>',
+  tile:'<rect x="4" y="4" width="7" height="7" rx="1"/><rect x="13" y="4" width="7" height="7" rx="1"/><rect x="4" y="13" width="7" height="7" rx="1"/><rect x="13" y="13" width="7" height="7" rx="1"/>',
+  paint:'<path d="M4 4h13v6H4z"/><path d="M17 6h3v4h-3M11 10v3H8v7h3"/>',
+  water:'<path d="M12 3c4 5 6.5 8 6.5 11.5A6.5 6.5 0 0 1 5.5 14.5C5.5 11 8 8 12 3z"/>',
+  bolt:'<path d="M13 2L4 14h6l-1 8 9-12h-6z"/>',
+  pipe:'<path d="M14.7 6.3a4 4 0 0 0-5.4 5.4l-5 5 3 3 5-5a4 4 0 0 0 5.4-5.4l-2.3 2.3-2.6-2.6z"/>',
+  rcc:'<path d="M4 21h16M6 21V8m12 13V8M3.5 8L12 3l8.5 5z"/>',
+  ceiling:'<rect x="3" y="4" width="18" height="4" rx="1"/><path d="M6 8v4M10 8v4M14 8v4M18 8v4"/>',
+  carpenter:'<path d="M14 4l6 6-3 3-6-6zM11 7L3 15l-1 4 4-1 8-8"/>',
+  building:'<rect x="4" y="3" width="16" height="18" rx="1.5"/><path d="M8 7h2M14 7h2M8 11h2M14 11h2M8 15h2M14 15h2"/>',
+  crane:'<path d="M12 21V4M12 4h8l-3 4M12 4H8M6 21h12M9 8v3"/>',
+  truck:'<path d="M3 7h11v9H3zM14 10h4l3 3v3h-7z"/><circle cx="7" cy="18" r="1.6"/><circle cx="17" cy="18" r="1.6"/>',
+  cement:'<path d="M4 8l8-4 8 4-8 4zM4 8v8l8 4 8-4V8"/>',
+  hardhat:'<path d="M3 16a9 9 0 0 1 18 0zM9 16V8a3 3 0 0 1 6 0v8M2 16h20"/>',
+  compass:'<circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/>',
+  scaffold:'<path d="M4 4v16M12 4v16M20 4v16M4 9h16M4 15h16"/>'
+};
+const svg = k => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${IC[k]}</svg>`;
+
+/* ---- Category tabs → each reshapes "What work" ---- */
+const TABS = [
+  {id:'all',   label:'All',       placeholder:'Search 333 trades, products and materials'},
+  {id:'trades',label:'Trades',    placeholder:'Search 333 trades, products and materials'},
+  {id:'companies',label:'Companies', placeholder:'Search contractors & turnkey firms'},
+  {id:'suppliers',label:'Suppliers', placeholder:'Search materials & suppliers'},
+  {id:'rentals', label:'Rentals',  placeholder:'Search equipment & machinery'},
+];
+
+/* ---- What-work catalogue per tab ---- */
+const CATALOG = {
+  trades:[
+    {ic:'plaster', n:'Plaster',       cat:'Trade & Labour Contractors', c:47},
+    {ic:'bar',     n:'Bar binding',   cat:'Trade & Labour Contractors', c:41},
+    {ic:'shutter', n:'Shuttering',    cat:'Trade & Labour Contractors', c:38},
+    {ic:'brick',   n:'Brickwork',     cat:'Trade & Labour Contractors', c:52},
+    {ic:'tile',    n:'Tiling',        cat:'Finishing Works', c:44},
+    {ic:'paint',   n:'Painting',      cat:'Finishing Works', c:61},
+    {ic:'water',   n:'Waterproofing', cat:'Finishing Works', c:29},
+    {ic:'bolt',    n:'Electrical',    cat:'MEP Works', c:55},
+    {ic:'pipe',    n:'Plumbing',      cat:'MEP Works', c:49},
+    {ic:'ceiling', n:'POP & False Ceiling', cat:'Interiors & Joinery', c:33},
+    {ic:'carpenter',n:'Carpentry',    cat:'Interiors & Joinery', c:40},
+    {ic:'rcc',     n:'RCC Structure', cat:'Concrete & RCC', c:36},
+  ],
+  companies:[
+    {ic:'building', n:'Civil Contractor',        cat:'Turnkey & Packages', c:58},
+    {ic:'rcc',      n:'RCC Package Contractor',  cat:'Concrete & RCC', c:34},
+    {ic:'building', n:'Turnkey House Construction', cat:'Building Package', c:42},
+    {ic:'bolt',     n:'MEP Turnkey Package',     cat:'MEP Package', c:27},
+    {ic:'tile',     n:'Interior Fit-out Company',cat:'Interiors Turnkey', c:39},
+    {ic:'water',    n:'Renovation Package',      cat:'Building Package', c:31},
+    {ic:'compass',  n:'Design & Build Firm',     cat:'Architects & Engineers', c:22},
+  ],
+  suppliers:[
+    {ic:'cement', n:'Cement (OPC/PPC)',   cat:'Building Materials', c:64},
+    {ic:'bar',    n:'TMT Bars (Sariya)',  cat:'Steel & Reinforcement', c:51},
+    {ic:'brick',  n:'Bricks & Blocks',    cat:'Building Materials', c:47},
+    {ic:'tile',   n:'Tiles & Marble',     cat:'Finishing Materials', c:58},
+    {ic:'cement', n:'Sand & Aggregate',   cat:'Building Materials', c:43},
+    {ic:'paint',  n:'Paints & Primers',   cat:'Finishing Materials', c:36},
+    {ic:'pipe',   n:'Pipes & Fittings',   cat:'Plumbing Supplies', c:38},
+    {ic:'bolt',   n:'Wires & Switchgear', cat:'Electrical Supplies', c:33},
+  ],
+  rentals:[
+    {ic:'crane',    n:'Concrete Mixer',    cat:'Site Machinery', c:26},
+    {ic:'scaffold', n:'Scaffolding',       cat:'Access Equipment', c:44},
+    {ic:'truck',    n:'JCB / Excavator',   cat:'Earthmoving', c:19},
+    {ic:'bolt',     n:'Needle Vibrator',   cat:'Concrete Equipment', c:22},
+    {ic:'crane',    n:'Tower Crane',       cat:'Lifting Equipment', c:12},
+    {ic:'hardhat',  n:'Safety Gear Kit',   cat:'Site Safety', c:37},
+  ],
+};
+CATALOG.all = [].concat(CATALOG.trades.slice(0,5), CATALOG.companies.slice(0,3), CATALOG.suppliers.slice(0,3), CATALOG.rentals.slice(0,2));
+
+/* ---- Locations (Where) ---- */
+const AREAS = ['Sector 56','Sohna Road','DLF Phase 3','Sector 82','IMT Manesar','Sector 62',
+  'Noida Extension','Neharpar','Indirapuram','Dwarka Sector 12','Golf Course Road','Sector 45'];
+
+/* ---- Timeline (When) ---- */
+const WHENS = [
+  {ic:'compass', t:'Any time',      d:'Show all available pros'},
+  {ic:'bolt',    t:'Immediately',   d:'Ready to start this week'},
+  {ic:'building',t:'This month',    d:'Planning to start in 30 days'},
+  {ic:'rcc',     t:'Next 3 months', d:'Project in planning stage'},
+];
+
+/* ---- Result pros (mock, keyed loosely by trade) ---- */
+const RATINGS=['4.98','4.9','4.87','5.0','4.95','4.82'];
+function proCard(i, tradeName, area){
+  const names=['Rajesh Kumar & Team','Sharma Constructions','Balaji Contractors','Anil Verma Works','Metro Build Co.','Deepak & Sons'];
+  const exp=['12 yrs','8 yrs','15 yrs','6 yrs','20 yrs','9 yrs'];
+  const jobs=[124,86,210,54,167,78];
+  return `<div class="fcard">
+    <div class="top">
+      <div class="ic">${svg(iconFor(tradeName))}</div>
+      <div class="bd">
+        <div class="nm">${names[i%names.length]} <span class="rt">★ ${RATINGS[i%RATINGS.length]}</span></div>
+        <div class="meta">${tradeName} · ${exp[i%exp.length]} experience · ${area}</div>
+        <div class="tags">
+          <span class="vbadge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg>Verified</span>
+          <span class="tag">${jobs[i%jobs.length]} jobs done</span>
+          <span class="tag">Responds in ~1h</span>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+function iconFor(name){
+  for(const k in CATALOG){const f=CATALOG[k].find(x=>x.n===name); if(f) return f.ic;}
+  return 'hardhat';
+}
+
+/* ---- Home feed ---- */
+const homeCatDefs=[
+  {ic:'hardhat',label:'Trades'},{ic:'building',label:'Companies'},
+  {ic:'cement',label:'Suppliers'},{ic:'crane',label:'Rentals'},{ic:'compass',label:'Pros'}
+];
+$('#homeCats').innerHTML = homeCatDefs.map((c,i)=>
+  `<div class="hc${i===0?' on':''}">${svg(c.ic)}${c.label}</div>`).join('');
+$('#homeFeed').innerHTML = CATALOG.trades.slice(0,4).map((t,i)=>
+  `<div class="fcard homejump" data-trade="${t.n}">
+     <div class="top"><div class="ic">${svg(t.ic)}</div>
+       <div class="bd"><div class="nm">${t.n} <span class="rt">${t.c} pros</span></div>
+       <div class="meta">${t.cat} · Sector 56, Gurugram</div>
+       <div class="tags"><span class="vbadge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg>Verified</span><span class="tag">Avg ★ 4.9</span></div>
+       </div></div>
+   </div>`).join('');
+document.querySelectorAll('.homejump').forEach(el=>el.addEventListener('click',()=>{
+  openSheet('homeScene'); pickTrade(el.dataset.trade);
+}));
+
+/* =========================================================================
+   STATE
+   ========================================================================= */
+const trip = { tab:'trades', what:null, where:'Sector 56', when:'Any time' };
+let step = 'what';
+let returnTo = 'homeScene';
+
+/* ---- tabs ---- */
+$('#shTabs').innerHTML = TABS.map(t=>`<div class="sh-tab${t.id==='trades'?' on':''}" data-tab="${t.id}">${t.label}</div>`).join('');
+$('#shTabs').querySelectorAll('.sh-tab').forEach(t=>t.addEventListener('click',()=>{
+  trip.tab=t.dataset.tab;
+  $('#shTabs').querySelectorAll('.sh-tab').forEach(x=>x.classList.toggle('on',x===t));
+  trip.what=null; setSummary('what', null);
+  $('#workInput').placeholder = TABS.find(x=>x.id===trip.tab).placeholder;
+  $('#whatTitle').textContent = trip.tab==='all'?'What are you looking for':'What '+({trades:'trade',companies:'company',suppliers:'material',rentals:'equipment'}[trip.tab]||'work');
+  $('#popLabel').textContent = 'Popular right now';
+  renderTrades();
+}));
+
+/* =========================================================================
+   ACCORDION
+   ========================================================================= */
+function setStep(s){
+  step=s;
+  document.querySelectorAll('.card').forEach(c=>c.classList.toggle('active', c.dataset.step===s));
+  const el=$('#card-'+s);
+  setTimeout(()=>el.scrollIntoView({behavior:'smooth',block:'nearest'}),140);
+}
+document.querySelectorAll('.card-head').forEach(h=>h.addEventListener('click',()=>setStep(h.parentElement.dataset.step)));
+
+function openSheet(from){ returnTo=from; $('#sheet').classList.add('open'); setStep('what'); }
+function closeSheet(){ $('#sheet').classList.remove('open'); }
+$('#homePill').addEventListener('click',()=>openSheet('homeScene'));
+$('#resPill').addEventListener('click',()=>openSheet('resultsScene'));
+$('#sheetClose').addEventListener('click',()=>{ closeSheet(); showScene(returnTo); });
+
+function showScene(id){ ['homeScene','resultsScene'].forEach(s=>$('#'+s).style.display = s===id?'flex':'none'); }
+
+/* =========================================================================
+   WHAT WORK
+   ========================================================================= */
+function currentList(){ return CATALOG[trip.tab] || CATALOG.all; }
+function renderTrades(){
+  const q=($('#workInput').value||'').trim().toLowerCase();
+  let list=currentList();
+  if(q){ list=list.filter(t=>t.n.toLowerCase().includes(q)||t.cat.toLowerCase().includes(q));
+         $('#popLabel').textContent = list.length? 'Matches' : ''; }
+  else { $('#popLabel').textContent='Popular right now'; }
+  const box=$('#tradeList');
+  box.classList.toggle('short', list.length<=2);
+  if(!list.length){ box.classList.add('short'); box.innerHTML=`<div class="no-res">No matches for “${$('#workInput').value}”. Try another term.</div>`; return; }
+  box.innerHTML=list.map(t=>`
+    <div class="trade${trip.what===t.n?' sel':''}" data-n="${t.n}">
+      <div class="ti">${svg(t.ic)}</div>
+      <div><div class="tn">${t.n}</div><div class="ts">${t.cat} · ${t.c} listed</div></div>
+    </div>`).join('');
+  box.querySelectorAll('.trade').forEach(el=>el.addEventListener('click',()=>pickTrade(el.dataset.n)));
+}
+function pickTrade(name){
+  trip.what=name; setSummary('what',name);
+  $('#workInput').value=''; renderTrades();
+  setStep('where');
+}
+$('#workInput').addEventListener('input',renderTrades);
+
+/* =========================================================================
+   WHERE
+   ========================================================================= */
+function renderWhere(){
+  const q=($('#whereInput').value||'').trim().toLowerCase();
+  const list=q? AREAS.filter(a=>a.toLowerCase().includes(q)) : AREAS;
+  $('#whereChips').innerHTML=list.map(a=>`<button class="chip${trip.where===a?' on':''}" data-a="${a}">${a}</button>`).join('')
+    || `<div class="no-res">No area found.</div>`;
+  $('#whereChips').querySelectorAll('.chip').forEach(c=>c.addEventListener('click',()=>{
+    trip.where=c.dataset.a; setSummary('where', c.dataset.a+', Gurugram');
+    renderWhere(); setStep('when');
+  }));
+}
+$('#whereInput').addEventListener('input',renderWhere);
+
+/* =========================================================================
+   WHEN
+   ========================================================================= */
+function renderWhen(){
+  $('#whenList').innerHTML=WHENS.map(w=>`
+    <button class="when-opt${trip.when===w.t?' on':''}" data-t="${w.t}">
+      <div class="wi">${svg(w.ic)}</div>
+      <div><div class="wt">${w.t}</div><div class="wd">${w.d}</div></div>
+      <span class="mark"></span>
+    </button>`).join('');
+  $('#whenList').querySelectorAll('.when-opt').forEach(o=>o.addEventListener('click',()=>{
+    trip.when=o.dataset.t;
+    setSummary('when', o.dataset.t, o.dataset.t==='Any time');
+    renderWhen();
+  }));
+}
+
+/* =========================================================================
+   SUMMARY / FOOTER
+   ========================================================================= */
+function setSummary(which, val, placeholder){
+  const map={what:'#sumWhat', where:'#sumWhere', when:'#sumWhen'};
+  const el=$(map[which]);
+  const defs={what:'Any trade', where:'Sector 56, Gurugram', when:'Any time'};
+  if(val){ el.textContent=val; el.classList.toggle('placeholder', !!placeholder); }
+  else { el.textContent=defs[which]; el.classList.add('placeholder'); }
+}
+
+$('#clearBtn').addEventListener('click',()=>{
+  trip.what=null; trip.where='Sector 56'; trip.when='Any time';
+  setSummary('what',null); setSummary('where','Sector 56, Gurugram'); setSummary('when','Any time',true);
+  $('#workInput').value=''; $('#whereInput').value='';
+  renderTrades(); renderWhere(); renderWhen(); setStep('what');
+});
+
+$('#searchBtn').addEventListener('click',()=>{
+  const what=trip.what || (trip.tab==='suppliers'?'Suppliers':trip.tab==='rentals'?'Equipment':trip.tab==='companies'?'Companies':'All trades');
+  const area=trip.where;
+  $('#resMain').textContent=what;
+  $('#resSub').textContent=`${area} · ${trip.when}`;
+  const n=4+Math.floor(Math.random()*5);
+  $('#resN').textContent=n;
+  $('#resList').innerHTML=Array.from({length:n},(_,i)=>proCard(i, trip.what||what, area)).join('');
+  closeSheet(); showScene('resultsScene');
+  toast('Showing '+n+' verified matches');
+});
+
+/* ---- toast ---- */
+let tt;
+function toast(m){ const t=$('#toast'); t.textContent=m; t.classList.add('show'); clearTimeout(tt); tt=setTimeout(()=>t.classList.remove('show'),2400); }
+
+/* ---- init ---- */
+renderTrades(); renderWhere(); renderWhen();
+</script>
+</body>
+</html>

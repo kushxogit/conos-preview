@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Airbnb Mobile Search</title>
+<style>
+  :root{
+    --pink:#ff385c; --pink2:#e0134e;
+    --ink:#222; --muted:#6a6a6a; --line:#ebebeb;
+    --bg:#ffffff; --sheet:#f7f7f7;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;height:100%;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:radial-gradient(circle at 50% 0%,#3a3f45,#17191c);
+    display:flex;align-items:center;justify-content:center;min-height:100vh;
+    -webkit-font-smoothing:antialiased;color:var(--ink);
+  }
+
+  /* ---------- Phone frame ---------- */
+  .phone{
+    position:relative;width:390px;height:844px;
+    background:var(--bg);border-radius:52px;overflow:hidden;
+    box-shadow:0 0 0 12px #0d0e10,0 0 0 14px #2a2c30,0 40px 90px rgba(0,0,0,.6);
+  }
+  .notch{
+    position:absolute;top:12px;left:50%;transform:translateX(-50%);
+    width:126px;height:34px;background:#0d0e10;border-radius:20px;z-index:60;
+  }
+  .statusbar{
+    position:absolute;top:0;left:0;right:0;height:54px;z-index:55;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:18px 30px 0;font-size:14px;font-weight:600;color:var(--ink);pointer-events:none;
+  }
+  .app{position:absolute;inset:0;border-radius:52px;overflow:hidden;}
+
+  /* ---------- Scenes ---------- */
+  .scene{position:absolute;inset:0;display:flex;flex-direction:column;}
+
+  /* ===== HOME / RESULTS shared header ===== */
+  .home-scroll{flex:1;overflow-y:auto;padding-top:54px;-webkit-overflow-scrolling:touch;}
+  .home-scroll::-webkit-scrollbar{display:none;}
+
+  .search-pill{
+    margin:6px 16px 10px;height:56px;border-radius:999px;background:#fff;
+    border:1px solid #e2e2e2;box-shadow:0 3px 10px rgba(0,0,0,.10),0 1px 3px rgba(0,0,0,.08);
+    display:flex;align-items:center;gap:10px;padding:0 18px;cursor:pointer;
+    transition:transform .15s ease;
+  }
+  .search-pill:active{transform:scale(.985);}
+  .search-pill svg{width:18px;height:18px;flex:0 0 auto;}
+  .search-pill .pill-main{font-weight:600;font-size:15px;}
+  .search-pill.summary{height:62px;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:0 22px;}
+  .search-pill.summary .pill-main{font-size:15px;font-weight:700;}
+  .search-pill.summary .pill-sub{font-size:12.5px;color:var(--muted);font-weight:500;}
+  .pill-filter{
+    position:absolute;right:16px;top:60px;width:44px;height:44px;border-radius:50%;
+    border:1px solid #ddd;background:#fff;display:none;align-items:center;justify-content:center;
+  }
+
+  /* category chips */
+  .cats{display:flex;gap:26px;padding:4px 16px 12px;overflow-x:auto;border-bottom:1px solid var(--line);}
+  .cats::-webkit-scrollbar{display:none;}
+  .cat{display:flex;flex-direction:column;align-items:center;gap:6px;flex:0 0 auto;
+    padding-bottom:10px;color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;
+    border-bottom:2px solid transparent;margin-bottom:-13px;}
+  .cat .ci{font-size:26px;filter:grayscale(.2);}
+  .cat.on{color:var(--ink);border-bottom-color:var(--ink);}
+
+  .sec-title{font-size:21px;font-weight:700;margin:20px 16px 12px;line-height:1.25;
+    display:flex;align-items:center;justify-content:space-between;}
+  .sec-title .arrow{width:30px;height:30px;border-radius:50%;border:1px solid #ddd;
+    display:flex;align-items:center;justify-content:center;font-size:14px;color:#444;}
+
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:0 16px 16px;}
+  .listing{cursor:pointer;}
+  .thumb{position:relative;width:100%;aspect-ratio:1/1;border-radius:16px;overflow:hidden;}
+  .thumb .ph{position:absolute;inset:0;}
+  .badge{position:absolute;top:8px;left:8px;background:#fff;border-radius:999px;
+    padding:5px 9px;font-size:11px;font-weight:700;box-shadow:0 1px 3px rgba(0,0,0,.15);}
+  .heart{position:absolute;top:8px;right:8px;color:#fff;filter:drop-shadow(0 1px 2px rgba(0,0,0,.4));font-size:20px;}
+  .l-title{font-weight:600;font-size:13.5px;margin-top:7px;}
+  .l-sub{font-size:13px;color:var(--muted);}
+  .l-price{font-size:13.5px;margin-top:2px;}
+  .l-price b{font-weight:600;}
+
+  /* bottom tab bar */
+  .tabbar{height:74px;border-top:1px solid var(--line);background:#fff;
+    display:flex;align-items:flex-start;justify-content:space-around;padding-top:10px;}
+  .tabbar .tb{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:10.5px;font-weight:600;color:#9a9a9a;}
+  .tabbar .tb.on{color:var(--pink);}
+  .tabbar .tb .ic{font-size:20px;}
+
+  /* ===== RESULTS map ===== */
+  .map{flex:1;position:relative;overflow:hidden;background:
+      linear-gradient(135deg,#e9efe6,#eef2f4);}
+  .map .road{position:absolute;background:#fff;opacity:.9;}
+  .pin{position:absolute;background:#fff;border-radius:999px;padding:6px 11px;font-size:12.5px;
+    font-weight:700;box-shadow:0 2px 8px rgba(0,0,0,.22);border:1px solid #eee;transform:translate(-50%,-50%);}
+  .pin.active{background:var(--ink);color:#fff;}
+  .fees{background:#fff;text-align:center;padding:12px;font-size:13px;font-weight:600;
+    border-top-left-radius:18px;border-top-right-radius:18px;margin-top:-18px;position:relative;z-index:2;
+    box-shadow:0 -4px 14px rgba(0,0,0,.06);}
+
+  /* ===== SEARCH SHEET (accordion) ===== */
+  .sheet{position:absolute;inset:0;z-index:40;background:var(--sheet);
+    display:flex;flex-direction:column;transform:translateY(100%);
+    transition:transform .42s cubic-bezier(.32,.72,0,1);pointer-events:none;}
+  .sheet.open{transform:translateY(0);pointer-events:auto;}
+
+  .sheet-head{position:relative;display:flex;align-items:center;justify-content:center;
+    gap:30px;padding:66px 20px 14px;}
+  .sh-cat{display:flex;flex-direction:column;align-items:center;gap:5px;font-size:12.5px;
+    font-weight:600;color:var(--muted);padding-bottom:8px;border-bottom:2px solid transparent;cursor:pointer;}
+  .sh-cat .ci{font-size:26px;}
+  .sh-cat.on{color:var(--ink);border-bottom-color:var(--ink);}
+  .sh-close{position:absolute;right:18px;top:60px;width:34px;height:34px;border-radius:50%;
+    border:1px solid #ddd;background:#fff;display:flex;align-items:center;justify-content:center;
+    font-size:16px;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.08);}
+
+  .sheet-body{flex:1;overflow-y:auto;padding:8px 12px 20px;}
+  .sheet-body::-webkit-scrollbar{display:none;}
+
+  .card{background:#fff;border-radius:22px;margin:0 4px 14px;
+    box-shadow:0 1px 3px rgba(0,0,0,.06);overflow:hidden;
+    transition:box-shadow .3s ease;}
+  .card.active{box-shadow:0 6px 26px rgba(0,0,0,.10);}
+
+  .card-head{width:100%;background:transparent;border:none;cursor:pointer;font-family:inherit;
+    padding:20px 22px;text-align:left;}
+  .head-collapsed{display:flex;align-items:center;justify-content:space-between;}
+  .head-collapsed .hc-label{font-size:14px;color:var(--muted);font-weight:600;}
+  .head-collapsed .hc-val{font-size:14px;color:var(--ink);font-weight:600;}
+  .head-open{font-size:22px;font-weight:700;margin:0;display:none;}
+  .card.active .head-collapsed{display:none;}
+  .card.active .head-open{display:block;}
+  .card.active .card-head{padding-bottom:6px;}
+
+  /* collapsible body via grid-rows 0fr/1fr */
+  .card-body{display:grid;grid-template-rows:0fr;
+    transition:grid-template-rows .42s cubic-bezier(.4,0,.2,1),opacity .3s ease;opacity:0;}
+  .card.active .card-body{grid-template-rows:1fr;opacity:1;}
+  .card-body > .cb-inner{overflow:hidden;min-height:0;}
+  .cb-pad{padding:6px 22px 24px;}
+
+  /* Where content */
+  .dest-input{display:flex;align-items:center;gap:10px;border:1px solid #ddd;border-radius:14px;
+    padding:14px 16px;margin-bottom:18px;box-shadow:0 1px 4px rgba(0,0,0,.05);}
+  .dest-input input{border:none;outline:none;font-size:15px;font-family:inherit;width:100%;background:transparent;}
+  .sug-label{font-size:13px;color:var(--muted);font-weight:600;margin:2px 0 6px;}
+  .dest{display:flex;align-items:center;gap:14px;padding:10px 4px;cursor:pointer;border-radius:12px;}
+  .dest:active{background:#f2f2f2;}
+  .dest .di{width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex:0 0 auto;}
+  .dest .dn{font-size:15px;font-weight:600;}
+  .dest .ds{font-size:13px;color:var(--muted);}
+
+  /* When content */
+  .toggle{display:flex;background:#ebebeb;border-radius:999px;padding:5px;margin:0 0 18px;}
+  .toggle button{flex:1;border:none;background:transparent;padding:11px;border-radius:999px;
+    font-weight:700;font-size:14px;cursor:pointer;font-family:inherit;color:var(--ink);}
+  .toggle button.on{background:#fff;box-shadow:0 1px 5px rgba(0,0,0,.15);}
+  .cal-month{margin-bottom:26px;}
+  .cal-name{font-weight:700;font-size:16px;margin:0 0 14px;}
+  .dow-row,.day-row{display:grid;grid-template-columns:repeat(7,1fr);}
+  .dow{ text-align:center;font-size:11px;color:var(--muted);font-weight:600;padding-bottom:10px;}
+  .day{aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;font-size:14px;
+    border:none;background:transparent;cursor:pointer;font-family:inherit;color:var(--ink);border-radius:50%;position:relative;}
+  .day.empty{visibility:hidden;} .day.off{color:#ccc;text-decoration:line-through;}
+  .day.inrange{background:#f0f0f0;border-radius:0;}
+  .day.end{background:var(--ink);color:#fff;}
+  .day.end.rs{border-radius:50% 0 0 50%;} .day.end.re{border-radius:0 50% 50% 0;}
+  .day.end.single{border-radius:50%;}
+  .chips{display:flex;gap:8px;flex-wrap:wrap;}
+  .chip{border:1px solid #ddd;background:#fff;border-radius:999px;padding:9px 15px;font-size:13px;
+    cursor:pointer;font-family:inherit;} .chip.on{border-color:var(--ink);font-weight:700;}
+  .flex-stay{text-align:center;} .flex-stay h4{margin:6px 0 16px;font-size:18px;}
+
+  /* Who content */
+  .grow{display:flex;align-items:center;justify-content:space-between;padding:20px 0;border-bottom:1px solid var(--line);}
+  .grow:last-child{border-bottom:none;}
+  .gt{font-size:16px;font-weight:700;} .gsub{font-size:13.5px;color:var(--muted);margin-top:2px;}
+  .step{display:flex;align-items:center;gap:14px;}
+  .step button{width:36px;height:36px;border-radius:50%;border:1px solid #b3b3b3;background:#fff;
+    font-size:20px;line-height:1;cursor:pointer;color:#444;display:flex;align-items:center;justify-content:center;}
+  .step button:disabled{opacity:.3;} .step .n{width:22px;text-align:center;font-size:16px;}
+
+  /* footer */
+  .sheet-foot{display:flex;align-items:center;justify-content:space-between;
+    padding:14px 20px 26px;background:#fff;border-top:1px solid var(--line);}
+  .link-btn{background:none;border:none;font-family:inherit;font-size:15px;font-weight:700;
+    text-decoration:underline;cursor:pointer;color:var(--ink);}
+  .cta{display:flex;align-items:center;gap:8px;background:var(--pink);color:#fff;border:none;
+    border-radius:14px;padding:15px 24px;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit;}
+  .cta:active{background:var(--pink2);}
+  .cta svg{width:16px;height:16px;}
+
+  .toast{position:absolute;left:50%;bottom:90px;transform:translateX(-50%) translateY(10px);
+    background:#222;color:#fff;padding:12px 18px;border-radius:12px;font-size:13px;z-index:80;
+    opacity:0;transition:opacity .25s,transform .25s;pointer-events:none;max-width:82%;text-align:center;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+<div class="phone">
+  <div class="notch"></div>
+  <div class="statusbar"><span>9:41</span><span>&#9679;&#9679;&#9679; &#128246; &#128267;</span></div>
+
+  <div class="app">
+
+    <!-- ===================== HOME SCENE ===================== -->
+    <div class="scene" id="homeScene">
+      <div class="home-scroll">
+        <div class="search-pill" id="homePill">
+          <svg viewBox="0 0 16 16" fill="#222"><path d="M11.74 10.34a6.5 6.5 0 1 0-1.4 1.4l3.85 3.85a1 1 0 0 0 1.42-1.42l-3.85-3.85zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>
+          <span class="pill-main">Start your search</span>
+        </div>
+
+        <div class="cats" id="homeCats">
+          <div class="cat on"><span class="ci">&#127968;</span>Homes</div>
+          <div class="cat"><span class="ci">&#127895;</span>Experiences</div>
+          <div class="cat"><span class="ci">&#128717;</span>Services</div>
+          <div class="cat"><span class="ci">&#127974;</span>Hotels</div>
+        </div>
+
+        <div class="sec-title">Popular homes in Noida <span class="arrow">&#8594;</span></div>
+        <div class="grid" id="feedGrid"></div>
+
+        <div class="sec-title">Available this weekend <span class="arrow">&#8594;</span></div>
+        <div class="grid" id="feedGrid2"></div>
+      </div>
+
+      <div class="tabbar">
+        <div class="tb on"><span class="ic">&#128269;</span>Explore</div>
+        <div class="tb"><span class="ic">&#9825;</span>Wishlists</div>
+        <div class="tb"><span class="ic">&#128100;</span>Log in</div>
+      </div>
+    </div>
+
+    <!-- ===================== RESULTS SCENE ===================== -->
+    <div class="scene" id="resultsScene" style="display:none;">
+      <div style="padding-top:54px;background:#fff;">
+        <div class="search-pill summary" id="resultPill" style="margin:6px 44px 10px 16px;">
+          <span class="pill-main" id="resPillMain">Homes nearby</span>
+          <span class="pill-sub" id="resPillSub">Any week &middot; Add guests</span>
+        </div>
+      </div>
+      <div class="map" id="map">
+        <div class="road" style="top:0;left:48%;width:5px;height:100%;transform:rotate(8deg);"></div>
+        <div class="road" style="top:40%;left:0;width:100%;height:5px;"></div>
+        <div class="road" style="top:0;left:20%;width:4px;height:100%;transform:rotate(-6deg);"></div>
+        <div class="pin active" style="left:42%;top:34%;">&#8377;17,600</div>
+        <div class="pin" style="left:20%;top:52%;">&#8377;12,400</div>
+        <div class="pin" style="left:66%;top:46%;">&#8377;24,650</div>
+        <div class="pin" style="left:38%;top:64%;">&#8377;27,200</div>
+        <div class="pin" style="left:72%;top:70%;">&#8377;20,000</div>
+        <div class="pin" style="left:26%;top:26%;">&#8377;14,790</div>
+      </div>
+      <div class="fees">&#128293; Prices include all fees</div>
+      <div class="tabbar">
+        <div class="tb on"><span class="ic">&#128269;</span>Explore</div>
+        <div class="tb"><span class="ic">&#9825;</span>Wishlists</div>
+        <div class="tb"><span class="ic">&#128100;</span>Log in</div>
+      </div>
+    </div>
+
+    <!-- ===================== SEARCH SHEET ===================== -->
+    <div class="sheet" id="sheet">
+      <div class="sheet-head">
+        <div class="sh-cat on"><span class="ci">&#127968;</span>Homes</div>
+        <div class="sh-cat"><span class="ci">&#127895;</span>Experiences</div>
+        <div class="sh-cat"><span class="ci">&#128717;</span>Services</div>
+        <button class="sh-close" id="sheetClose">&#10005;</button>
+      </div>
+
+      <div class="sheet-body">
+
+        <!-- WHERE -->
+        <section class="card active" id="card-where" data-step="where">
+          <button class="card-head">
+            <div class="head-collapsed"><span class="hc-label">Where</span><span class="hc-val" id="sumWhere">I'm flexible</span></div>
+            <h2 class="head-open">Where?</h2>
+          </button>
+          <div class="card-body"><div class="cb-inner"><div class="cb-pad">
+            <div class="dest-input">
+              <svg viewBox="0 0 16 16" width="18" height="18" fill="#222"><path d="M11.74 10.34a6.5 6.5 0 1 0-1.4 1.4l3.85 3.85a1 1 0 0 0 1.42-1.42l-3.85-3.85zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>
+              <input id="destInput" placeholder="Search destinations" />
+            </div>
+            <div class="sug-label">Suggested destinations</div>
+            <div id="destList"></div>
+          </div></div></div>
+        </section>
+
+        <!-- WHEN -->
+        <section class="card" id="card-when" data-step="when">
+          <button class="card-head">
+            <div class="head-collapsed"><span class="hc-label">When</span><span class="hc-val" id="sumWhen">Add dates</span></div>
+            <h2 class="head-open">When?</h2>
+          </button>
+          <div class="card-body"><div class="cb-inner"><div class="cb-pad">
+            <div class="toggle" id="whenToggle">
+              <button data-mode="dates" class="on">Dates</button>
+              <button data-mode="flexible">Flexible</button>
+            </div>
+            <div id="whenBody"></div>
+          </div></div></div>
+        </section>
+
+        <!-- WHO -->
+        <section class="card" id="card-who" data-step="who">
+          <button class="card-head">
+            <div class="head-collapsed"><span class="hc-label">Who</span><span class="hc-val" id="sumWho">Add guests</span></div>
+            <h2 class="head-open">Who?</h2>
+          </button>
+          <div class="card-body"><div class="cb-inner"><div class="cb-pad">
+            <div id="whoBody"></div>
+          </div></div></div>
+        </section>
+
+      </div>
+
+      <div class="sheet-foot">
+        <button class="link-btn" id="clearBtn">Clear all</button>
+        <button class="cta" id="searchBtn">
+          <svg viewBox="0 0 16 16" fill="#fff"><path d="M11.74 10.34a6.5 6.5 0 1 0-1.4 1.4l3.85 3.85a1 1 0 0 0 1.42-1.42l-3.85-3.85zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>
+          Search
+        </button>
+      </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+  </div>
+</div>
+
+<script>
+/* ------------------------------------------------------------------ state */
+const trip = {
+  where:null, dateMode:'dates', start:null, end:null,
+  guests:{adults:0,children:0,infants:0,pets:0}
+};
+let step = 'where';            // active accordion step
+let returnTo = 'homeScene';    // which scene the sheet returns to
+
+const $ = s => document.querySelector(s);
+const sheet = $('#sheet');
+
+/* ------------------------------------------------------------------ feed */
+const GRAD = [
+  'linear-gradient(135deg,#c9a27a,#7c5a3a)','linear-gradient(135deg,#d9b9c4,#8a5a6d)',
+  'linear-gradient(135deg,#a8b6a0,#5f6f57)','linear-gradient(135deg,#cbb6a0,#6d5c46)',
+  'linear-gradient(135deg,#b9c6d6,#5a6b83)','linear-gradient(135deg,#d8c7a6,#8a7550)'
+];
+function listing(title,sub,price,rate,i){
+  return `<div class="listing">
+    <div class="thumb"><div class="ph" style="background:${GRAD[i%GRAD.length]}"></div>
+      <div class="badge">Guest favourite</div><div class="heart">&#9825;</div></div>
+    <div class="l-title">${title}</div>
+    <div class="l-price"><b>&#8377;${price}</b> for 2 nights &middot; &#9733; ${rate}</div>
+  </div>`;
+}
+$('#feedGrid').innerHTML =
+  listing('Flat in Noida','',"9,200","5.0",0)+listing('Villa in Noida','',"9,397","5.0",1)+
+  listing('Flat in Sector 51','',"3,998","4.89",2)+listing('Flat in Gurugram','',"13,923","4.98",3);
+$('#feedGrid2').innerHTML =
+  listing('Home in Dehradun','',"6,540","4.92",4)+listing('Stay in New Delhi','',"8,091","4.87",5)+
+  listing('Cottage in Goa','',"11,200","4.95",1)+listing('Loft in Gurgaon','',"7,780","4.9",2);
+
+/* ------------------------------------------------------------------ scenes */
+function showScene(id){
+  ['homeScene','resultsScene'].forEach(s=>$('#'+s).style.display = s===id?'flex':'none');
+}
+function openSheet(from){
+  returnTo = from;
+  sheet.classList.add('open');
+  setStep('where');
+}
+function closeSheet(){ sheet.classList.remove('open'); }
+
+$('#homePill').addEventListener('click',()=>openSheet('homeScene'));
+$('#resultPill').addEventListener('click',()=>openSheet('resultsScene'));
+$('#sheetClose').addEventListener('click',()=>{ closeSheet(); showScene(returnTo); });
+
+/* ------------------------------------------------------------- accordion */
+function setStep(s){
+  step = s;
+  document.querySelectorAll('.card').forEach(c=>
+    c.classList.toggle('active', c.dataset.step===s));
+  // scroll active card into view within the sheet
+  const el = document.getElementById('card-'+s);
+  setTimeout(()=>el.scrollIntoView({behavior:'smooth',block:'nearest'}),120);
+}
+document.querySelectorAll('.card-head').forEach(h=>{
+  h.addEventListener('click',()=> setStep(h.parentElement.dataset.step));
+});
+
+/* ------------------------------------------------------------- WHERE */
+const DESTS = [
+  {i:'&#129517;',bg:'#eaf2ff',n:'Nearby',s:"Find what's around you"},
+  {i:'&#127961;&#65039;',bg:'#ffe9ef',n:'Noida, Uttar Pradesh',s:'Near you'},
+  {i:'&#127796;',bg:'#fff2e0',n:'Gurgaon District, Haryana',s:'Near you'},
+  {i:'&#127794;',bg:'#e9f7ec',n:'Dehradun, Uttarakhand',s:'For nature lovers'},
+  {i:'&#127983;',bg:'#e9f7ec',n:'New Delhi, Delhi',s:'For sights like India Gate'},
+  {i:'&#127963;&#65039;',bg:'#ffe9ef',n:'Greater Noida, Uttar Pradesh',s:'Near you'},
+  {i:'&#127958;&#65039;',bg:'#eaf2ff',n:'North Goa, Goa',s:'For beach lovers'},
+];
+$('#destList').innerHTML = DESTS.map((d,idx)=>`
+  <div class="dest" data-i="${idx}">
+    <div class="di" style="background:${d.bg}">${d.i}</div>
+    <div><div class="dn">${d.n}</div><div class="ds">${d.s}</div></div>
+  </div>`).join('');
+$('#destList').querySelectorAll('.dest').forEach(el=>{
+  el.addEventListener('click',()=>{
+    const d = DESTS[+el.dataset.i];
+    trip.where = d.n==='Nearby' ? "I'm flexible" : d.n.split(',')[0];
+    $('#sumWhere').textContent = trip.where;
+    $('#destInput').value = trip.where==="I'm flexible" ? '' : trip.where;
+    setStep('when');       // advance, Airbnb-style
+  });
+});
+$('#destInput').addEventListener('input',e=>{
+  trip.where = e.target.value || null;
+  $('#sumWhere').textContent = trip.where || "I'm flexible";
+});
+
+/* ------------------------------------------------------------- WHEN */
+const M=['January','February','March','April','May','June','July','August',
+  'September','October','November','December'];
+const DOW=['S','M','T','W','T','F','S'];
+let calBase=new Date(2026,8,1);         // September 2026 (matches recording)
+
+function renderWhen(){
+  const b=$('#whenBody');
+  if(trip.dateMode==='flexible'){
+    b.innerHTML=`<div class="flex-stay"><h4>How long would you like to stay?</h4>
+      <div class="chips" style="justify-content:center">
+        ${['Weekend','Week','Month'].map(x=>`<button class="chip" data-len="${x}">${x}</button>`).join('')}
+      </div></div>`;
+    b.querySelectorAll('.chip').forEach(c=>c.addEventListener('click',()=>{
+      b.querySelectorAll('.chip').forEach(x=>x.classList.remove('on'));
+      c.classList.add('on'); $('#sumWhen').textContent='A '+c.dataset.len.toLowerCase();
+    }));
+    return;
+  }
+  b.innerHTML = monthHTML(calBase)+monthHTML(addM(calBase,1))+
+    `<div class="chips">${['Exact dates','&plusmn; 1 day','&plusmn; 2 days','&plusmn; 3 days','&plusmn; 7 days']
+      .map((x,i)=>`<button class="chip${i===0?' on':''}">${x}</button>`).join('')}</div>`;
+  b.querySelectorAll('.day:not(.empty):not(.off)').forEach(d=>
+    d.addEventListener('click',()=>onDay(new Date(+d.dataset.ts))));
+  b.querySelectorAll('.chips .chip').forEach(c=>c.addEventListener('click',()=>{
+    b.querySelectorAll('.chips .chip').forEach(x=>x.classList.remove('on')); c.classList.add('on');
+  }));
+}
+function monthHTML(base){
+  const y=base.getFullYear(),m=base.getMonth();
+  const first=new Date(y,m,1).getDay(), days=new Date(y,m+1,0).getDate();
+  const today=new Date(); today.setHours(0,0,0,0);
+  let cells='';
+  for(let i=0;i<first;i++) cells+=`<button class="day empty"></button>`;
+  for(let d=1;d<=days;d++){
+    const dt=new Date(y,m,d),ts=+dt,off=dt<today,cls=['day'];
+    if(off)cls.push('off');
+    const s=trip.start?+trip.start:null,e=trip.end?+trip.end:null;
+    if(s!==null&&e!==null){
+      if(ts===s&&ts===e)cls.push('end','single');
+      else if(ts===s)cls.push('end','rs');
+      else if(ts===e)cls.push('end','re');
+      else if(ts>s&&ts<e)cls.push('inrange');
+    } else if(s!==null&&ts===s)cls.push('end','single');
+    cells+=`<button class="${cls.join(' ')}" data-ts="${ts}" ${off?'disabled':''}>${d}</button>`;
+  }
+  return `<div class="cal-month"><div class="cal-name">${M[m]} ${y}</div>
+    <div class="dow-row">${DOW.map(x=>`<div class="dow">${x}</div>`).join('')}</div>
+    <div class="day-row">${cells}</div></div>`;
+}
+function onDay(dt){
+  if(!trip.start||(trip.start&&trip.end)){trip.start=dt;trip.end=null;}
+  else if(dt<trip.start){trip.start=dt;}
+  else{trip.end=dt;}
+  if(trip.start&&trip.end)$('#sumWhen').textContent=fmt(trip.start)+' – '+fmt(trip.end);
+  else if(trip.start)$('#sumWhen').textContent=fmt(trip.start);
+  renderWhen();
+}
+const fmt=d=>M[d.getMonth()].slice(0,3)+' '+d.getDate();
+const addM=(d,n)=>{const x=new Date(d);x.setMonth(x.getMonth()+n);return x;};
+$('#whenToggle').querySelectorAll('button').forEach(btn=>btn.addEventListener('click',()=>{
+  trip.dateMode=btn.dataset.mode;
+  $('#whenToggle').querySelectorAll('button').forEach(b=>b.classList.toggle('on',b===btn));
+  renderWhen();
+}));
+renderWhen();
+
+/* ------------------------------------------------------------- WHO */
+const GDEF=[
+  {k:'adults',t:'Adults',s:'Ages 13 or above'},
+  {k:'children',t:'Children',s:'Ages 2 – 12'},
+  {k:'infants',t:'Infants',s:'Under 2'},
+  {k:'pets',t:'Pets',s:'Bringing a service animal?'},
+];
+function renderWho(){
+  $('#whoBody').innerHTML=GDEF.map(g=>`
+    <div class="grow"><div><div class="gt">${g.t}</div><div class="gsub">${g.s}</div></div>
+      <div class="step" data-k="${g.k}">
+        <button class="dec" ${trip.guests[g.k]===0?'disabled':''}>&minus;</button>
+        <span class="n">${trip.guests[g.k]}</span><button class="inc">+</button>
+      </div></div>`).join('');
+  $('#whoBody').querySelectorAll('.step').forEach(st=>{
+    const k=st.dataset.k;
+    st.querySelector('.inc').addEventListener('click',()=>chg(k,1));
+    st.querySelector('.dec').addEventListener('click',()=>chg(k,-1));
+  });
+}
+function chg(k,d){ trip.guests[k]=Math.max(0,trip.guests[k]+d); renderWho(); updWho(); }
+function updWho(){
+  const g=trip.guests, people=g.adults+g.children, p=[];
+  if(people)p.push(people+' guest'+(people>1?'s':''));
+  if(g.infants)p.push(g.infants+' infant'+(g.infants>1?'s':''));
+  if(g.pets)p.push(g.pets+' pet'+(g.pets>1?'s':''));
+  $('#sumWho').textContent = p.length? p.join(', ') : 'Add guests';
+}
+renderWho();
+
+/* ------------------------------------------------------------- footer */
+$('#clearBtn').addEventListener('click',()=>{
+  trip.where=null;trip.start=null;trip.end=null;
+  trip.guests={adults:0,children:0,infants:0,pets:0};trip.dateMode='dates';
+  $('#sumWhere').textContent="I'm flexible";$('#sumWhen').textContent='Add dates';
+  $('#sumWho').textContent='Add guests';$('#destInput').value='';
+  renderWhen();renderWho();setStep('where');
+});
+$('#searchBtn').addEventListener('click',()=>{
+  const g=trip.guests, people=g.adults+g.children+g.infants+g.pets;
+  const where = trip.where || 'Homes nearby';
+  const when = (trip.start&&trip.end)?fmt(trip.start)+' – '+fmt(trip.end)
+      : trip.start?fmt(trip.start):'Any week';
+  const who = people? people+' guest'+(people>1?'s':'') : 'Add guests';
+  $('#resPillMain').textContent = where==="I'm flexible"?'Homes nearby':where;
+  $('#resPillSub').textContent = when+' · '+who;
+  closeSheet(); showScene('resultsScene');
+  toast('Searching: '+[where,when,who].join('  ·  '));
+});
+
+let tt;
+function toast(m){ const t=$('#toast'); t.textContent=m; t.classList.add('show');
+  clearTimeout(tt); tt=setTimeout(()=>t.classList.remove('show'),2600); }
+</script>
+</body>
+</html>

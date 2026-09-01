@@ -1,0 +1,1037 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Airbnb Search Animation</title>
+  <style>
+    :root {
+      --ab-pink: #ff385c;
+      --ab-pink-2: #e61e4d;
+      --ab-text: #222;
+      --ab-muted: #717171;
+      --ab-border: #ddd;
+      --ab-bg: #f7f7f7;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: var(--ab-bg);
+      color: var(--ab-text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+        Helvetica, Arial, "Circular", sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Fake top nav just for context */
+    .topbar {
+      height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 40px;
+      background: #fff;
+      border-bottom: 1px solid #ebebeb;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--ab-pink);
+      font-weight: 800;
+      font-size: 22px;
+      letter-spacing: -0.3px;
+    }
+    .brand svg { width: 30px; height: 30px; }
+    .topbar-tabs { display: flex; gap: 24px; font-weight: 600; color: #222; }
+    .topbar-tabs span { cursor: pointer; opacity: .85; }
+    .topbar-tabs span:hover { opacity: 1; }
+    .topbar-right {
+      display: flex; align-items: center; gap: 10px;
+      border: 1px solid var(--ab-border); border-radius: 999px;
+      padding: 6px 8px 6px 14px; font-weight: 600; cursor: pointer;
+    }
+    .topbar-right .avatar {
+      width: 30px; height: 30px; border-radius: 50%;
+      background: #717171; display:flex; align-items:center; justify-content:center; color:#fff;
+    }
+
+    .page-title {
+      text-align: center;
+      margin: 46px 0 6px;
+      font-size: 28px;
+      font-weight: 700;
+    }
+    .page-sub {
+      text-align: center;
+      color: var(--ab-muted);
+      margin: 0 0 8px;
+      font-size: 15px;
+    }
+
+    /* ========================================
+       SEARCH CONTAINER
+       ======================================== */
+    .airbnb-search-container {
+      position: relative;
+      margin: 2rem auto;
+      max-width: 850px;
+      padding: 0 1rem;
+    }
+
+    .search-bar {
+      position: relative;
+      display: flex;
+      align-items: center;
+      background: #fff;
+      border: 1px solid var(--ab-border);
+      border-radius: 60px;
+      padding: 0.5rem;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.05);
+      transition: box-shadow 0.2s ease, background 0.2s ease;
+    }
+    /* When a section is active, dim the bar background so the white
+       morphing indicator reads as the "raised" active pill. */
+    .search-bar.has-active { background: #ebebeb; }
+    .search-bar:hover {
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1), 0 8px 16px rgba(0,0,0,0.1);
+    }
+
+    /* ---- Morphing background indicator ---- */
+    .active-indicator {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100px;
+      height: 100%;
+      background: #fff;
+      border-radius: 60px;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.12), 0 3px 6px rgba(0,0,0,0.08);
+      pointer-events: none;
+      z-index: 1;
+      opacity: 0;
+      will-change: transform, opacity, width, height, left, top;
+    }
+
+    /* ---- Clickable sections ---- */
+    .search-section {
+      position: relative;
+      z-index: 2;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      padding: 0.875rem 1.5rem;
+      background: transparent;
+      border: none;
+      border-radius: 60px;
+      cursor: pointer;
+      transition: background 0.2s ease;
+      text-align: left;
+      font-family: inherit;
+    }
+    .search-section:hover:not(.active) { background: rgba(0,0,0,0.05); }
+    .search-bar.has-active .search-section:hover:not(.active) { background: rgba(0,0,0,0.08); }
+
+    .section-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #222;
+      margin-bottom: 0.125rem;
+    }
+    .section-value {
+      font-size: 0.875rem;
+      color: var(--ab-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 180px;
+    }
+    .section-value.filled { color: #222; }
+
+    .section-divider {
+      width: 1px;
+      height: 32px;
+      background: var(--ab-border);
+      flex: 0 0 auto;
+      z-index: 2;
+    }
+    .search-bar.has-active .section-divider { background: transparent; }
+
+    /* Who section holds the search button inline */
+    .who-section {
+      flex: 1.4;
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      padding-right: 0.5rem;
+    }
+    .who-section .section-content {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .search-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--ab-pink);
+      color: #fff;
+      border: none;
+      border-radius: 999px;
+      padding: 14px 16px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 15px;
+      font-family: inherit;
+      z-index: 3;
+      transition: background .2s ease, max-width .3s ease, padding .3s ease;
+      white-space: nowrap;
+      overflow: hidden;
+    }
+    .search-btn:hover { background: var(--ab-pink-2); }
+    .search-btn span {
+      max-width: 0;
+      opacity: 0;
+      transition: max-width .3s ease, opacity .2s ease;
+    }
+    /* Expand the label into "Search" text only when something is active */
+    .search-bar.has-active .search-btn span {
+      max-width: 80px;
+      opacity: 1;
+      margin-left: 2px;
+    }
+
+    /* ========================================
+       CONTENT PANEL (dropdown)
+       ======================================== */
+    .content-panel {
+      position: absolute;
+      top: calc(100% + 0.75rem);
+      left: 0;
+      width: fit-content;
+      max-width: calc(100vw - 2rem);
+      background: #fff;
+      border-radius: 32px;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.12), 0 4px 24px rgba(0,0,0,0.08);
+      z-index: 10;
+      overflow: hidden;
+      will-change: height, left, transform, opacity;
+      transform-origin: top center;
+      opacity: 0;
+      transform: translateY(-16px);
+    }
+    .content-panel .panel-inner { padding: 32px; }
+
+    /* Per-section natural widths (guide: Where~600, When~750, Who~400) */
+    .content-panel.panel-where .panel-inner { width: 540px; max-width: 100%; }
+    .content-panel.panel-when  .panel-inner { width: 710px; max-width: 100%; }
+    .content-panel.panel-who   .panel-inner { width: 400px; max-width: 100%; }
+
+    /* ---- Where content ---- */
+    .suggestions-title {
+      margin: 0 0 18px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #222;
+    }
+    .suggestions-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+    .suggestion-item {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+      padding: 0;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      text-align: left;
+    }
+    .suggestion-thumb {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      border-radius: 18px;
+      border: 1px solid #dddddd;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 40px;
+      transition: border-color .15s ease, transform .15s ease;
+      background: #f2f2f2;
+    }
+    .suggestion-item:hover .suggestion-thumb { border-color: #222; transform: scale(1.02); }
+    .suggestion-item.selected .suggestion-thumb { border: 2px solid #222; }
+    .suggestion-name { font-size: 14px; font-weight: 500; color: #222; }
+
+    /* ---- When (calendar) content ---- */
+    .toggle-pill {
+      display: inline-flex;
+      background: #ebebeb;
+      border-radius: 999px;
+      padding: 4px;
+      margin: 0 auto 24px;
+      gap: 4px;
+    }
+    .toggle-pill button {
+      border: none;
+      background: transparent;
+      padding: 8px 20px;
+      border-radius: 999px;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      font-family: inherit;
+      color: #222;
+      transition: background .2s ease, box-shadow .2s ease;
+    }
+    .toggle-pill button.on {
+      background: #fff;
+      box-shadow: 0 1px 4px rgba(0,0,0,.15);
+    }
+    .when-head { display: flex; justify-content: center; }
+
+    .cal-wrap { display: flex; gap: 40px; justify-content: center; }
+    .cal-month { width: 300px; }
+    .cal-title {
+      text-align: center;
+      font-weight: 600;
+      font-size: 15px;
+      margin-bottom: 14px;
+    }
+    .cal-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 2px;
+    }
+    .cal-dow {
+      text-align: center;
+      font-size: 11px;
+      color: var(--ab-muted);
+      font-weight: 600;
+      padding-bottom: 8px;
+    }
+    .cal-day {
+      aspect-ratio: 1 / 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      border-radius: 50%;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      font-family: inherit;
+      color: #222;
+      position: relative;
+    }
+    .cal-day:hover:not(.empty):not(.disabled) {
+      outline: 1px solid #222;
+      outline-offset: -1px;
+    }
+    .cal-day.empty { visibility: hidden; cursor: default; }
+    .cal-day.disabled { color: #ccc; text-decoration: line-through; cursor: default; }
+    .cal-day.in-range { background: #f0f0f0; border-radius: 0; }
+    .cal-day.endpoint { background: #222; color: #fff; }
+    .cal-day.range-start { border-radius: 50% 0 0 50%; }
+    .cal-day.range-end { border-radius: 0 50% 50% 0; }
+    .cal-day.endpoint.range-start,
+    .cal-day.endpoint.range-end,
+    .cal-day.endpoint.single { border-radius: 50%; }
+
+    .flex-chips { display: flex; gap: 8px; margin-top: 22px; flex-wrap: wrap; }
+    .flex-chip {
+      border: 1px solid var(--ab-border);
+      background: #fff;
+      border-radius: 999px;
+      padding: 8px 14px;
+      font-size: 13px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: border-color .15s ease;
+    }
+    .flex-chip:hover { border-color: #222; }
+    .flex-chip.on { border-color: #222; background: #f7f7f7; font-weight: 600; }
+
+    /* Flexible sub-panel */
+    .flex-body { text-align: center; }
+    .flex-body h4 { margin: 4px 0 18px; font-size: 20px; }
+    .stay-len { display:flex; gap:8px; justify-content:center; flex-wrap:wrap; }
+
+    /* ---- Who content ---- */
+    .guest-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 22px 0;
+      border-bottom: 1px solid #ebebeb;
+    }
+    .guest-row:last-child { border-bottom: none; }
+    .guest-title { font-size: 16px; font-weight: 600; color: #222; }
+    .guest-sub { font-size: 14px; color: var(--ab-muted); margin-top: 2px; }
+    .stepper { display: flex; align-items: center; gap: 16px; }
+    .stepper button {
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      border: 1px solid #b0b0b0;
+      background: #fff;
+      color: #222;
+      font-size: 20px;
+      line-height: 1;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: border-color .15s ease, opacity .15s ease;
+    }
+    .stepper button:hover:not(:disabled) { border-color: #222; }
+    .stepper button:disabled { opacity: .35; cursor: not-allowed; }
+    .stepper .count { width: 24px; text-align: center; font-size: 16px; }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 32px;
+      transform: translateX(-50%) translateY(20px);
+      background: #222;
+      color: #fff;
+      padding: 14px 22px;
+      border-radius: 12px;
+      font-size: 14px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .25s ease, transform .25s ease;
+      z-index: 50;
+      box-shadow: 0 8px 24px rgba(0,0,0,.25);
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    @media (max-width: 780px) {
+      .topbar-tabs { display: none; }
+      .content-panel.panel-when .panel-inner { width: min(710px, 86vw); }
+      .cal-wrap { flex-direction: column; gap: 20px; align-items: center; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Fake nav for context -->
+  <div class="topbar">
+    <div class="brand">
+      <svg viewBox="0 0 32 32" fill="currentColor" aria-hidden="true">
+        <path d="M16 1c2.008 0 3.463.963 4.751 3.269l.533 1.025c1.954 3.83 6.114 12.54 7.1 14.836l.145.353c.667 1.591.91 2.472.96 3.396l.01.415.001.228c0 4.062-2.877 6.53-6.85 6.53-2.475 0-4.286-1.153-5.937-3.294l-.244-.318-.117-.152-.115.152c-1.567 2.077-3.286 3.278-5.599 3.417l-.344.007-.298-.006C6.876 31.354 4 28.886 4 24.824l.001-.228.01-.415c.05-.924.293-1.805.96-3.396l.145-.353c.986-2.296 5.146-11.006 7.1-14.836l.533-1.025C14.037 1.963 15.492 1 17.5 1H16zm0 2.5c-.914 0-1.52.406-2.27 1.732l-.542 1.04c-1.918 3.756-6.006 12.309-6.95 14.51l-.14.345c-.508 1.28-.66 1.842-.66 2.348 0 2.706 1.657 4.024 4.15 4.024 1.51 0 2.586-.686 3.797-2.204l.267-.343c.365-.482.712-.99 1.302-1.882l.596-.912.594.912c.59.892.937 1.4 1.302 1.882l.267.343c1.21 1.518 2.286 2.204 3.797 2.204 2.493 0 4.15-1.318 4.15-4.024 0-.506-.152-1.068-.66-2.348l-.14-.345c-.944-2.201-5.032-10.754-6.95-14.51l-.542-1.04C17.52 3.906 16.914 3.5 16 3.5z"/>
+      </svg>
+      airbnb
+    </div>
+    <div class="topbar-tabs">
+      <span>Stays</span><span>Experiences</span><span>Services</span>
+    </div>
+    <div class="topbar-right">
+      <span>☰</span>
+      <div class="avatar">🙂</div>
+    </div>
+  </div>
+
+  <h1 class="page-title">Not sure where to go? Perfect.</h1>
+  <p class="page-sub">Search the Airbnb-style bar below — click Where, When, or Who.</p>
+
+  <!-- ===== SEARCH ===== -->
+  <div class="airbnb-search-container">
+    <div class="search-bar" id="searchBar">
+
+      <!-- Morphing background indicator -->
+      <div class="active-indicator" id="indicator"></div>
+
+      <!-- Where -->
+      <button class="search-section" id="whereSection" data-section="where"
+              aria-expanded="false" aria-controls="contentPanel">
+        <div class="section-label">Where</div>
+        <div class="section-value" id="whereValue">Search destinations</div>
+      </button>
+
+      <div class="section-divider"></div>
+
+      <!-- When -->
+      <button class="search-section" id="whenSection" data-section="when"
+              aria-expanded="false" aria-controls="contentPanel">
+        <div class="section-label">When</div>
+        <div class="section-value" id="whenValue">Add dates</div>
+      </button>
+
+      <div class="section-divider"></div>
+
+      <!-- Who -->
+      <button class="search-section who-section" id="whoSection" data-section="who"
+              aria-expanded="false" aria-controls="contentPanel">
+        <div class="section-content">
+          <div class="section-label">Who</div>
+          <div class="section-value" id="whoValue">Add guests</div>
+        </div>
+        <span class="search-btn" id="searchBtn" role="button" aria-label="Search">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="white" aria-hidden="true">
+            <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+          </svg>
+          <span>Search</span>
+        </span>
+      </button>
+    </div>
+
+    <!-- Dropdown -->
+    <div class="content-panel" id="contentPanel" role="region" aria-live="polite" style="display:none;"></div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+  /* =========================================================================
+     SPRING ANIMATION ENGINE (native — no external deps)
+     Samples a unit spring for the given stiffness/damping/mass, then drives
+     the Web Animations API with linear-timed keyframes. This reproduces the
+     physics-based feel the guide asks for (Motion.dev spring) offline.
+     ========================================================================= */
+  const SPRING_DEFAULTS = { stiffness: 300, damping: 25, mass: 1 };
+
+  function sampleSpring({ stiffness, damping, mass }) {
+    const w0 = Math.sqrt(stiffness / mass);
+    const zeta = damping / (2 * Math.sqrt(stiffness * mass));
+    const dt = 1 / 60;
+    const samples = [];
+    let t = 0;
+    const maxT = 4;
+    while (t <= maxT) {
+      let x;
+      if (zeta < 1) {
+        const wd = w0 * Math.sqrt(1 - zeta * zeta);
+        x = 1 - Math.exp(-zeta * w0 * t) *
+              (Math.cos(wd * t) + (zeta * w0 / wd) * Math.sin(wd * t));
+      } else {
+        x = 1 - Math.exp(-w0 * t) * (1 + w0 * t);
+      }
+      samples.push(x);
+      if (t > 0.12 && Math.abs(1 - x) < 0.0015) { samples.push(1); break; }
+      t += dt;
+    }
+    if (samples[samples.length - 1] !== 1) samples.push(1);
+    return { samples, duration: samples.length * dt * 1000 };
+  }
+
+  const LAYOUT_KEYS = { left: 'px', top: 'px', width: 'px', height: 'px' };
+
+  function num(v) { return typeof v === 'number' ? v : parseFloat(v) || 0; }
+
+  function defaultFor(key, el) {
+    if (key === 'opacity') return 1;
+    if (key === 'scale') return 1;
+    if (key === 'x' || key === 'y') return 0;
+    if (key === 'width') return el.offsetWidth;
+    if (key === 'height') return el.offsetHeight;
+    if (key === 'left' || key === 'top') return parseFloat(el.style[key]) || 0;
+    return 0;
+  }
+
+  function composeTransform(vals) {
+    const x = vals.x || 0, y = vals.y || 0;
+    const s = ('scale' in vals) ? vals.scale : 1;
+    return `translate(${x}px, ${y}px) scale(${s})`;
+  }
+
+  /**
+   * animate(el|els, target, opts) -> { finished: Promise }
+   * target keys: opacity, scale, x, y, left, top, width, height
+   */
+  function animate(elOrList, target, opts = {}) {
+    const els = Array.isArray(elOrList)
+      ? elOrList
+      : (elOrList instanceof NodeList ? [...elOrList] : [elOrList]);
+
+    const spring = { ...SPRING_DEFAULTS, ...opts };
+    const { samples, duration } = sampleSpring(spring);
+    const keys = Object.keys(target);
+    const promises = [];
+
+    els.forEach(el => {
+      const from = el._m || (el._m = {});
+      keys.forEach(k => { if (!(k in from)) from[k] = defaultFor(k, el); });
+
+      const hasTransform = keys.some(k => k === 'scale' || k === 'x' || k === 'y');
+      const hasOpacity = keys.includes('opacity');
+      const layoutKeys = keys.filter(k => k in LAYOUT_KEYS);
+
+      const keyframes = samples.map(p => {
+        const frame = {};
+        const cur = {};
+        keys.forEach(k => {
+          cur[k] = from[k] + (num(target[k]) - from[k]) * p;
+        });
+        if (hasOpacity) frame.opacity = cur.opacity;
+        if (hasTransform) {
+          frame.transform = composeTransform({
+            x: 'x' in cur ? cur.x : from.x || 0,
+            y: 'y' in cur ? cur.y : from.y || 0,
+            scale: 'scale' in cur ? cur.scale : (from.scale ?? 1),
+          });
+        }
+        layoutKeys.forEach(k => { frame[k] = cur[k] + 'px'; });
+        return frame;
+      });
+
+      const anim = el.animate(keyframes, {
+        duration: Math.max(120, duration),
+        easing: 'linear',
+        fill: 'forwards',
+      });
+
+      // Commit final values to inline styles + cache so the next tween
+      // reads an accurate "from".
+      const commit = () => {
+        if (hasOpacity) el.style.opacity = target.opacity;
+        if (hasTransform) {
+          el.style.transform = composeTransform({
+            x: 'x' in target ? num(target.x) : from.x || 0,
+            y: 'y' in target ? num(target.y) : from.y || 0,
+            scale: 'scale' in target ? num(target.scale) : (from.scale ?? 1),
+          });
+        }
+        layoutKeys.forEach(k => { el.style[k] = num(target[k]) + 'px'; });
+        keys.forEach(k => { from[k] = num(target[k]); });
+        try { anim.cancel(); } catch (e) {}
+      };
+      anim.onfinish = commit;
+      promises.push(anim.finished.then(commit).catch(() => {}));
+    });
+
+    return { finished: Promise.all(promises) };
+  }
+
+  /* =========================================================================
+     STATE + DOM REFERENCES
+     ========================================================================= */
+  let activeSection = null;               // 'where' | 'when' | 'who' | null
+  const searchBar   = document.getElementById('searchBar');
+  const indicator   = document.getElementById('indicator');
+  const contentPanel= document.getElementById('contentPanel');
+  const searchBtn   = document.getElementById('searchBtn');
+  const toastEl     = document.getElementById('toast');
+  const sections = {
+    where: document.getElementById('whereSection'),
+    when:  document.getElementById('whenSection'),
+    who:   document.getElementById('whoSection'),
+  };
+  const values = {
+    where: document.getElementById('whereValue'),
+    when:  document.getElementById('whenValue'),
+    who:   document.getElementById('whoValue'),
+  };
+
+  // Selection model
+  const trip = {
+    where: null,
+    dateMode: 'dates',           // 'dates' | 'flexible'
+    start: null, end: null,      // Date objects
+    guests: { adults: 0, children: 0, infants: 0, pets: 0 },
+  };
+
+  /* =========================================================================
+     EVENT WIRING
+     ========================================================================= */
+  Object.keys(sections).forEach(name => {
+    sections[name].addEventListener('click', (e) => {
+      // The inline Search button lives inside the Who button — don't toggle.
+      if (e.target.closest('#searchBtn')) return;
+      setActiveSection(activeSection === name ? null : name);
+    });
+    sections[name].addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') setActiveSection(null);
+    });
+  });
+
+  searchBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    runSearch();
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!searchBar.contains(e.target) && !contentPanel.contains(e.target)) {
+      setActiveSection(null);
+    }
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') setActiveSection(null);
+  });
+
+  window.addEventListener('resize', debounce(() => {
+    if (activeSection) animateContentPanelIn(activeSection, true);
+  }, 150));
+
+  /* =========================================================================
+     CORE: setActiveSection
+     ========================================================================= */
+  function setActiveSection(section) {
+    activeSection = section;
+
+    Object.keys(sections).forEach(key => {
+      const on = key === section;
+      sections[key].classList.toggle('active', on);
+      sections[key].setAttribute('aria-expanded', String(on));
+    });
+    searchBar.classList.toggle('has-active', !!section);
+
+    animateIndicator(section);
+
+    if (section) showContentPanel(section);
+    else hideContentPanel();
+  }
+
+  /* ---- Indicator morph ---- */
+  function animateIndicator(section) {
+    if (!section) {
+      animate(indicator, { opacity: 0, scale: 0.96 },
+              { stiffness: 500, damping: 35 });
+      return;
+    }
+    const el = sections[section];
+    const barRect = searchBar.getBoundingClientRect();
+    const secRect = el.getBoundingClientRect();
+    animate(indicator, {
+      opacity: 1,
+      scale: 1,
+      left: secRect.left - barRect.left,
+      top: secRect.top - barRect.top,
+      width: secRect.width,
+      height: secRect.height,
+    }, { stiffness: 300, damping: 25, mass: 0.8 });
+  }
+
+  /* ---- Content panel ---- */
+  function showContentPanel(section) {
+    updatePanelContent(section);
+
+    contentPanel.className = 'content-panel panel-' + section;
+    contentPanel.style.display = 'block';
+
+    // Double rAF: measure AFTER the browser paints the new content.
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => animateContentPanelIn(section));
+    });
+  }
+
+  function animateContentPanelIn(section, isResize) {
+    const barRect = searchBar.getBoundingClientRect();
+    const secRect = sections[section].getBoundingClientRect();
+    const searchBarWidth = searchBar.offsetWidth;
+
+    contentPanel.style.height = 'auto';
+    const children = Array.from(contentPanel.children);
+
+    // Reset transforms (NOT opacity) to measure natural size without a flash.
+    children.forEach(c => { c.style.transform = 'none'; });
+    void contentPanel.offsetHeight; // force reflow
+    const actualPanelWidth = contentPanel.offsetWidth;
+
+    const padding = 8;
+    let leftPosition;
+    if (window.innerWidth < 768) {
+      leftPosition = (searchBarWidth - actualPanelWidth) / 2;
+    } else if (section === 'where') {
+      leftPosition = secRect.left - barRect.left;
+    } else if (section === 'when') {
+      leftPosition = (searchBarWidth - actualPanelWidth) / 2;
+    } else { // who
+      leftPosition = searchBarWidth - actualPanelWidth - padding;
+    }
+    leftPosition = Math.max(padding,
+      Math.min(leftPosition, searchBarWidth - actualPanelWidth - padding));
+
+    // Set children initial state for the cross-fade.
+    children.forEach(c => {
+      c.style.opacity = '0';
+      c.style.transform = 'scale(0.96) translateY(8px)';
+      c._m = { opacity: 0, scale: 0.96, x: 0, y: 8 };
+    });
+
+    // Sync the panel's cached "from" so left/y tween smoothly.
+    if (isResize) {
+      contentPanel._m = { opacity: 1, y: 0, left: leftPosition };
+      contentPanel.style.left = leftPosition + 'px';
+    } else {
+      contentPanel._m = {
+        opacity: 0, y: -16,
+        left: parseFloat(contentPanel.style.left) || leftPosition,
+      };
+      contentPanel.style.left = (contentPanel._m.left) + 'px';
+    }
+
+    // PHASE 1: container drop-in
+    animate(contentPanel, { opacity: 1, y: 0, left: leftPosition },
+            { stiffness: 300, damping: 25, mass: 0.8 });
+
+    // PHASE 2: children cross-fade
+    animate(children, { opacity: 1, scale: 1, y: 0 },
+            { stiffness: 300, damping: 25, mass: 0.8 });
+  }
+
+  function hideContentPanel() {
+    animate(contentPanel, { opacity: 0, y: -16 }, { stiffness: 400, damping: 34 })
+      .finished.then(() => {
+        if (!activeSection) contentPanel.style.display = 'none';
+      });
+  }
+
+  /* =========================================================================
+     PANEL CONTENT RENDERERS
+     ========================================================================= */
+  function updatePanelContent(section) {
+    if (section === 'where') renderWhere();
+    else if (section === 'when') renderWhen();
+    else renderWho();
+  }
+
+  /* ---- WHERE ---- */
+  const REGIONS = [
+    { emoji: '🌍', name: "I'm flexible" },
+    { emoji: '🏝️', name: 'Southeast Asia' },
+    { emoji: '🗽', name: 'United States' },
+    { emoji: '🏛️', name: 'Italy' },
+    { emoji: '🕌', name: 'Middle East' },
+    { emoji: '🏔️', name: 'Switzerland' },
+    { emoji: '🌸', name: 'Japan' },
+    { emoji: '🏖️', name: 'Maldives' },
+    { emoji: '🏰', name: 'France' },
+  ];
+  function renderWhere() {
+    contentPanel.innerHTML = `
+      <div class="panel-inner">
+        <h3 class="suggestions-title">Search by region</h3>
+        <div class="suggestions-grid">
+          ${REGIONS.map(r => `
+            <button class="suggestion-item${trip.where === r.name ? ' selected' : ''}" data-name="${r.name}">
+              <div class="suggestion-thumb">${r.emoji}</div>
+              <div class="suggestion-name">${r.name}</div>
+            </button>`).join('')}
+        </div>
+      </div>`;
+    contentPanel.querySelectorAll('.suggestion-item').forEach(btn => {
+      btn.addEventListener('click', () => {
+        trip.where = btn.dataset.name;
+        setValue('where', trip.where);
+        setActiveSection('when'); // advance like Airbnb
+      });
+    });
+  }
+
+  /* ---- WHEN ---- */
+  const MONTHS = ['January','February','March','April','May','June','July',
+                  'August','September','October','November','December'];
+  const DOW = ['S','M','T','W','T','F','S'];
+  let calBase = new Date(); calBase.setDate(1);
+
+  function renderWhen() {
+    contentPanel.innerHTML = `
+      <div class="panel-inner">
+        <div class="when-head">
+          <div class="toggle-pill">
+            <button data-mode="dates" class="${trip.dateMode==='dates'?'on':''}">Dates</button>
+            <button data-mode="flexible" class="${trip.dateMode==='flexible'?'on':''}">Flexible</button>
+          </div>
+        </div>
+        <div id="whenBody"></div>
+      </div>`;
+    contentPanel.querySelectorAll('.toggle-pill button').forEach(b => {
+      b.addEventListener('click', () => {
+        trip.dateMode = b.dataset.mode;
+        renderWhen();
+        requestAnimationFrame(() =>
+          requestAnimationFrame(() => animateContentPanelIn('when', true)));
+      });
+    });
+    renderWhenBody();
+  }
+
+  function renderWhenBody() {
+    const body = contentPanel.querySelector('#whenBody');
+    if (trip.dateMode === 'flexible') {
+      body.innerHTML = `
+        <div class="flex-body">
+          <h4>How long would you like to stay?</h4>
+          <div class="stay-len">
+            ${['Weekend','Week','Month'].map(l =>
+              `<button class="flex-chip" data-len="${l}">${l}</button>`).join('')}
+          </div>
+        </div>`;
+      body.querySelectorAll('.flex-chip').forEach(c =>
+        c.addEventListener('click', () => {
+          body.querySelectorAll('.flex-chip').forEach(x => x.classList.remove('on'));
+          c.classList.add('on');
+          setValue('when', 'A ' + c.dataset.len.toLowerCase());
+        }));
+      return;
+    }
+    body.innerHTML = `
+      <div class="cal-wrap">
+        ${monthHTML(calBase)}
+        ${monthHTML(addMonths(calBase, 1))}
+      </div>
+      <div class="flex-chips">
+        ${['Exact dates','± 1 day','± 2 days','± 3 days','± 7 days'].map((l,i) =>
+          `<button class="flex-chip${i===0?' on':''}">${l}</button>`).join('')}
+      </div>`;
+    body.querySelectorAll('.cal-day:not(.empty):not(.disabled)').forEach(d => {
+      d.addEventListener('click', () => onDayClick(new Date(+d.dataset.ts)));
+    });
+    body.querySelectorAll('.flex-chips .flex-chip').forEach(c =>
+      c.addEventListener('click', () => {
+        body.querySelectorAll('.flex-chips .flex-chip').forEach(x => x.classList.remove('on'));
+        c.classList.add('on');
+      }));
+  }
+
+  function monthHTML(base) {
+    const y = base.getFullYear(), m = base.getMonth();
+    const first = new Date(y, m, 1).getDay();
+    const days = new Date(y, m + 1, 0).getDate();
+    const today = new Date(); today.setHours(0,0,0,0);
+    let cells = '';
+    for (let i = 0; i < first; i++) cells += `<button class="cal-day empty"></button>`;
+    for (let d = 1; d <= days; d++) {
+      const date = new Date(y, m, d);
+      const ts = +date;
+      const disabled = date < today;
+      const cls = ['cal-day'];
+      if (disabled) cls.push('disabled');
+      const s = trip.start ? +trip.start : null;
+      const e = trip.end ? +trip.end : null;
+      if (s !== null && e !== null) {
+        if (ts === s && ts === e) cls.push('endpoint','single');
+        else if (ts === s) cls.push('endpoint','range-start');
+        else if (ts === e) cls.push('endpoint','range-end');
+        else if (ts > s && ts < e) cls.push('in-range');
+      } else if (s !== null && ts === s) {
+        cls.push('endpoint','single');
+      }
+      cells += `<button class="${cls.join(' ')}" data-ts="${ts}" ${disabled?'disabled':''}>${d}</button>`;
+    }
+    return `
+      <div class="cal-month">
+        <div class="cal-title">${MONTHS[m]} ${y}</div>
+        <div class="cal-grid">
+          ${DOW.map(x => `<div class="cal-dow">${x}</div>`).join('')}
+          ${cells}
+        </div>
+      </div>`;
+  }
+
+  function onDayClick(date) {
+    if (!trip.start || (trip.start && trip.end)) {
+      trip.start = date; trip.end = null;
+    } else if (date < trip.start) {
+      trip.start = date;
+    } else {
+      trip.end = date;
+    }
+    updateWhenValue();
+    renderWhenBody(); // re-render calendar with new range highlighting
+  }
+
+  function updateWhenValue() {
+    if (trip.start && trip.end) {
+      setValue('when', fmt(trip.start) + ' – ' + fmt(trip.end));
+    } else if (trip.start) {
+      setValue('when', fmt(trip.start));
+    } else {
+      setValue('when', null);
+    }
+  }
+  function fmt(d) { return MONTHS[d.getMonth()].slice(0,3) + ' ' + d.getDate(); }
+  function addMonths(d, n) { const x = new Date(d); x.setMonth(x.getMonth()+n); return x; }
+
+  /* ---- WHO ---- */
+  const GUEST_DEFS = [
+    { key: 'adults',   title: 'Adults',   sub: 'Ages 13 or above' },
+    { key: 'children', title: 'Children', sub: 'Ages 2 – 12' },
+    { key: 'infants',  title: 'Infants',  sub: 'Under 2' },
+    { key: 'pets',     title: 'Pets',     sub: 'Bringing a service animal?' },
+  ];
+  function renderWho() {
+    contentPanel.innerHTML = `
+      <div class="panel-inner">
+        ${GUEST_DEFS.map(g => `
+          <div class="guest-row">
+            <div>
+              <div class="guest-title">${g.title}</div>
+              <div class="guest-sub">${g.sub}</div>
+            </div>
+            <div class="stepper" data-key="${g.key}">
+              <button class="dec" ${trip.guests[g.key]===0?'disabled':''}>−</button>
+              <span class="count">${trip.guests[g.key]}</span>
+              <button class="inc">+</button>
+            </div>
+          </div>`).join('')}
+      </div>`;
+    contentPanel.querySelectorAll('.stepper').forEach(st => {
+      const key = st.dataset.key;
+      st.querySelector('.inc').addEventListener('click', () => changeGuest(key, +1));
+      st.querySelector('.dec').addEventListener('click', () => changeGuest(key, -1));
+    });
+  }
+  function changeGuest(key, delta) {
+    trip.guests[key] = Math.max(0, trip.guests[key] + delta);
+    renderWho();
+    updateWhoValue();
+  }
+  function updateWhoValue() {
+    const g = trip.guests;
+    const people = g.adults + g.children;
+    const parts = [];
+    if (people) parts.push(people + ' guest' + (people>1?'s':''));
+    if (g.infants) parts.push(g.infants + ' infant' + (g.infants>1?'s':''));
+    if (g.pets) parts.push(g.pets + ' pet' + (g.pets>1?'s':''));
+    setValue('who', parts.length ? parts.join(', ') : null);
+  }
+
+  /* =========================================================================
+     HELPERS
+     ========================================================================= */
+  const DEFAULTS = {
+    where: 'Search destinations', when: 'Add dates', who: 'Add guests',
+  };
+  function setValue(section, text) {
+    const el = values[section];
+    if (text) { el.textContent = text; el.classList.add('filled'); }
+    else { el.textContent = DEFAULTS[section]; el.classList.remove('filled'); }
+    // keep the indicator glued to the (possibly wider) active section
+    if (activeSection) requestAnimationFrame(() => animateIndicator(activeSection));
+  }
+
+  function runSearch() {
+    setActiveSection(null);
+    const g = trip.guests;
+    const people = g.adults + g.children + g.infants + g.pets;
+    const bits = [
+      trip.where || 'Anywhere',
+      (trip.start && trip.end) ? (fmt(trip.start)+' – '+fmt(trip.end))
+        : (trip.start ? fmt(trip.start) : 'Any week'),
+      people ? (people + ' guest' + (people>1?'s':'')) : 'Add guests',
+    ];
+    showToast('🔍  ' + bits.join('  ·  '));
+  }
+
+  let toastTimer;
+  function showToast(msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toastEl.classList.remove('show'), 3200);
+  }
+
+  function debounce(fn, ms) {
+    let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); };
+  }
+  </script>
+</body>
+</html>
