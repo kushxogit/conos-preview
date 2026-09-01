@@ -846,7 +846,7 @@ function render(){
   const heading = S.sub ? S.sub : (c ? c.name : 'Category Listings');
 
   const cardsContent = isFiltered
-    ? '<div class="sec"><h2>'+esc(heading)+'</h2><span class="r">'+rows.length+' listed</span></div>'+
+    ? '<div class="sec" id="catListingsSec"><h2>'+esc(heading)+'</h2><span class="r">'+rows.length+' listed</span></div>'+
       (rows.length ? rows.map(card).join('')
        : '<div class="empty">Nothing matched that filter.<br>ConOS shows the gap rather than padding the page.<br><button class="chip" data-clear style="margin-top:14px">Clear all filters</button></div>')
     : '<div class="note" style="margin-top:16px"><b>Select any category above</b> to view verified contractors, equipment rentals, and material suppliers.</div>';
@@ -1045,11 +1045,30 @@ document.addEventListener('click',e=>{
     else{S.sub=n;S.q=n;S.filter=sb2.dataset.subcat;toast(visible().length+' in '+n);}
     render();const h=$$('.sec h2').find(x=>x.textContent===n);if(h)h.scrollIntoView({block:'start',behavior:'smooth'});return;}
   const t=e.target.closest('[data-cat]');
-  if(t){const k=t.dataset.cat,was=S.filter===k;S.filter=was?null:k;S.sub=null;S.q='';
-    toast(was?'Showing everything':'Showing '+CATS.find(x=>x.k===k).name.toLowerCase());render();return;}
+  if(t){
+    const k=t.dataset.cat,was=S.filter===k;
+    S.filter=was?null:k;S.sub=null;S.q='';
+    toast(was?'Show all categories':'Showing '+CATS.find(x=>x.k===k).name.toLowerCase());
+    render();
+    if(!was){
+      setTimeout(()=>{
+        const sec=$('#catListingsSec');
+        if(sec) sec.scrollIntoView({block:'start',behavior:'smooth'});
+      },60);
+    }
+    return;
+  }
   const qf=e.target.closest('[data-qf]');
   if(qf){const k=qf.dataset.qf,i=S.qf.indexOf(k);if(i>=0)S.qf.splice(i,1);else S.qf.push(k);
-    render();toast(S.qf.length?visible().length+' match '+S.qf.length+' filter'+(S.qf.length>1?'s':''):'Filters cleared');return;}
+    render();toast(S.qf.length?visible().length+' match '+S.qf.length+' filter'+(S.qf.length>1?'s':''):'Filters cleared');
+    if(S.qf.length){
+      setTimeout(()=>{
+        const sec=$('#catListingsSec');
+        if(sec) sec.scrollIntoView({block:'start',behavior:'smooth'});
+      },60);
+    }
+    return;
+  }
   if(e.target.closest('[data-clear]')){S.filter=null;S.q='';S.sub=null;S.qf=[];render();return;}
   const tr=e.target.closest('[data-try]');
   if(tr){const v=tr.dataset.try;
@@ -1057,7 +1076,14 @@ document.addEventListener('click',e=>{
     else if(v==='loc'){openSheet();}
     else if(v==='pause'){S.paused=!S.paused;tr.textContent=S.paused?'Play artwork':'Pause artwork';cycle();}
     else if(v==='search'){sxOpen();}
-    else{S.filter=v;S.sub=null;S.q='';render();}
+    else{
+      S.filter=v;S.sub=null;S.q='';
+      render();
+      setTimeout(()=>{
+        const sec=$('#catListingsSec');
+        if(sec) sec.scrollIntoView({block:'start',behavior:'smooth'});
+      },60);
+    }
     return;}
   if(e.target.closest('[data-sxclose]')){sxClose();return;}
   const sg=e.target.closest('[data-seg]'); if(sg){const n=+sg.dataset.seg;SX.step=SX.step===n?-1:n;sxRender();return;}
