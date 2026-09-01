@@ -940,6 +940,8 @@ function render(){
   if(isCategoryView){
     const heading = S.sub ? S.sub : (c ? c.name : 'Category Listings');
     const subList = c ? c.subs : [];
+    const sortLabels = {score:'ConOS Score',near:'Nearest',stars:'Top Rating',rate:'Price: Low–High',exp:'Experience'};
+
     $('#scroll').innerHTML=
       '<div class="catpage-head">'+
         '<div class="cat-nav-row">'+
@@ -958,15 +960,18 @@ function render(){
             '<button class="subchip'+(!S.sub?' on':'')+'" data-clearcat="'+(c?c.k:'')+'">All '+esc(c?c.short:'')+'</button>'+
             subList.map(s=>'<button class="subchip'+(S.sub===s[0]?' on':'')+'" data-sub="'+esc(s[0])+'" data-subcat="'+c.k+'">'+esc(s[0])+' <small>('+s[2]+')</small></button>').join('')+
           '</div>': '')+
-        '<div class="sort-bar">'+
-          '<span class="sort-lbl">Sort:</span>'+
-          '<button class="sort-pill'+(S.sort==='score'?' on':'')+'" data-sort="score">Score 🏆</button>'+
-          '<button class="sort-pill'+(S.sort==='near'?' on':'')+'" data-sort="near">Nearest 📍</button>'+
-          '<button class="sort-pill'+(S.sort==='stars'?' on':'')+'" data-sort="stars">Rating ⭐</button>'+
-          '<button class="sort-pill'+(S.sort==='rate'?' on':'')+'" data-sort="rate">Price 💸</button>'+
-        '</div>'+
-        '<div class="chips" style="padding:0 0 6px">'+
-          QFILT.map(x=>'<button class="chip" data-qf="'+x.k+'" aria-pressed="'+(S.qf.indexOf(x.k)>=0)+'">'+I[x.ic]+esc(x.t)+'</button>').join('')+
+        '<div class="sf-action-row">'+
+          '<button class="sf-btn'+(S.sort!=='score'?' on':'')+'" id="openSortBtn">'+
+            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 16 4 4 4-4M7 20V4M21 8l-4-4-4 4M17 4v16"/></svg>'+
+            '<span>Sort: <strong>'+esc(sortLabels[S.sort]||'Score')+'</strong></span>'+
+            '<svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>'+
+          '</button>'+
+          '<button class="sf-btn'+(S.qf.length?' on':'')+'" id="openFilterBtn">'+
+            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>'+
+            '<span>Filter</span>'+
+            (S.qf.length?'<span class="sf-count">'+S.qf.length+'</span>':'')+
+            '<svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>'+
+          '</button>'+
         '</div>'+
       '</div>'+
       '<div class="cat-listings-stream">'+
