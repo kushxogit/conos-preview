@@ -70,9 +70,19 @@ h1,h2,h3,.disp{font-family:"Sora",sans-serif}
 .locbtn .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:400}
 .locbtn svg{width:13px;height:13px;flex:none;color:var(--teal)}
 .locbtn.det{color:var(--faint);font-weight:400}
-.avatarbtn{width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:var(--paper);
-  cursor:pointer;flex:none;display:flex;align-items:center;justify-content:center;color:var(--muted);padding:0}
-.avatarbtn svg{width:20px;height:20px}
+.hdr-actions{display:flex;align-items:center;gap:8px;flex:none}
+.hdrbtn{width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:var(--paper);
+  cursor:pointer;flex:none;display:flex;align-items:center;justify-content:center;color:var(--muted);padding:0;position:relative;transition:.15s}
+.hdrbtn:hover{border-color:var(--navy);color:var(--navy)}
+.hdrbtn svg{width:18px;height:18px}
+.boltbtn{color:var(--emerald);background:var(--em-50);border-color:var(--em-200)}
+.boltbtn:hover{border-color:var(--emerald);color:var(--emerald)}
+.bolt-dot{position:absolute;top:-1px;right:-1px;width:9px;height:9px;border-radius:50%;background:var(--emerald);
+  border:2px solid #fff;box-shadow:0 0 0 1px rgba(4,120,87,.3);animation:livepulse 2.2s infinite}
+.avatarbtn{width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:var(--paper);
+  cursor:pointer;flex:none;display:flex;align-items:center;justify-content:center;color:var(--muted);padding:0;position:relative;transition:.15s}
+.avatarbtn:hover{border-color:var(--navy);color:var(--navy)}
+.avatarbtn svg{width:19px;height:19px}
 
 /* search pill */
 .searchwrap{flex:none;padding:0 18px 12px}
@@ -445,7 +455,16 @@ h1,h2,h3,.disp{font-family:"Sora",sans-serif}
       <div class="wordmark">Con<span>OS</span></div>
       <button class="locbtn det" id="locBtn"><span class="nm">Detecting location…</span></button>
     </div>
-    <button class="avatarbtn" data-go="Account" aria-label="Account"></button>
+    <div class="hdr-actions">
+      <button class="hdrbtn boltbtn" data-go="Instant match" aria-label="Instant match">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 5 13h6l-1 9 8-11h-6z"/></svg>
+        <span class="bolt-dot"></span>
+      </button>
+      <button class="hdrbtn notifbtn" data-go="Notifications" aria-label="Notifications">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      </button>
+      <button class="hdrbtn avatarbtn" data-go="Account" aria-label="Account"></button>
+    </div>
   </header>
   <div class="searchwrap" id="searchwrap">
     <button class="search" id="q" aria-label="Open search">
@@ -509,6 +528,7 @@ const I={
  loc:g('<path d="M12 21s7-6.2 7-11a7 7 0 1 0-14 0c0 4.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/>',1.9),
  chev:g('<path d="m6 9 6 6 6-6"/>',2.2),
  user:g('<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6 8-6s8 2 8 6"/>',1.9),
+ bell:g('<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>',1.9),
  grid:g('<rect x="3" y="3" width="7" height="7" rx="1.8"/><rect x="14" y="3" width="7" height="7" rx="1.8"/><rect x="3" y="14" width="7" height="7" rx="1.8"/><rect x="14" y="14" width="7" height="7" rx="1.8"/>',1.9),
  heart:g('<path d="M12 20s-7-4.6-9.2-8.4A5 5 0 0 1 12 6a5 5 0 0 1 9.2 5.6C19 15.4 12 20 12 20z"/>',1.9),
  chat:g('<path d="M4 5h16v11H8l-4 3z"/>',1.9),
