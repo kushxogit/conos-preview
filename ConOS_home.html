@@ -352,7 +352,8 @@ h1,h2,h3,.disp{font-family:"Sora",sans-serif}
 .scorebar{position:relative;height:6px;border-radius:99px;background:#E9EEF6;
   box-shadow:inset 0 1px 1.5px rgba(13,27,51,.10);overflow:hidden}
 .scorebar>i{position:absolute;left:0;top:0;bottom:0;border-radius:99px;display:block;overflow:hidden;
-  box-shadow:inset -1.5px 0 0 0 #00D9FF, 0 0 7px rgba(0,217,255,.45);
+  background:linear-gradient(90deg,#047857 0%,#059669 45%,#10B981 78%,#00D9FF 100%);
+  box-shadow:inset -1.5px 0 0 0 #00D9FF, 0 0 8px rgba(0,217,255,.55);
   animation:fillup 1.15s cubic-bezier(.34,.9,.3,1) both}
 @keyframes fillup{from{width:0 !important}}
 /* liquid surface: light sheen */
@@ -739,7 +740,7 @@ function scoreBar(r){
   return '<div class="scoreblock">'+
     '<div class="scorehd"><span class="lab">'+WM+' Trust Score</span>'+
       '<span class="score-meta"><span class="tc-badge"><b>'+r.score+'</b><s>/100</s></span><span class="band" style="color:'+col+'">'+bandN+'</span></span></div>'+
-    '<div class="scorebar"><i style="width:'+w+'%;background:'+col+'">'+
+    '<div class="scorebar"><i style="width:'+w+'%;background:linear-gradient(90deg,#047857 0%,#059669 45%,#10B981 78%,#00D9FF 100%)">'+
       '<span class="glit">'+dots+'</span></i></div>'+
     '<div class="scorenote"><span>'+(r.vj?'<b>'+r.vj+'</b> verified projects':'Verification in progress')+
       '</span><span>updated <b>Aug 2026</b></span></div></div>';
