@@ -326,27 +326,31 @@ h1,h2,h3,.disp{font-family:"Sora",sans-serif}
 .lav:not(.soon) i{animation:livepulse 2.1s ease-out infinite}
 .lav.soon{color:var(--cyan-700)}
 
-/* Trust Score — compact segmented meter bar */
-.trustc{margin-top:10px;padding:9px 12px 8px;border:1px solid #D7EFE4;border-radius:12px;
-  background:linear-gradient(180deg,#F8FCFA 0%,#F0FAF5 100%)}
-.tc-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px}
-.tc-lab{font-size:11.5px;font-weight:600;color:var(--muted);display:flex;align-items:center;gap:5px}
-.tc-lab .shd{width:13px;height:13px;flex:none;color:var(--emerald);display:flex;align-items:center}
-.tc-lab .shd svg{width:13px;height:13px;display:block}
-.tc-lab .wm{font-family:"IBM Plex Sans",sans-serif;color:var(--ink);font-weight:700;letter-spacing:-.2px}
-.tc-lab .wm span{color:var(--blue)}
-.tc-score{display:flex;align-items:baseline;gap:6px;flex:none}
-.tc-num{font-family:"IBM Plex Mono",monospace;font-size:13px;font-weight:700;color:var(--text)}
-.tc-num s{text-decoration:none;font-size:9.5px;color:var(--faint)}
-.tc-band{font-size:10px;font-weight:700;padding:1px 7px;border-radius:99px}
-.meter{display:flex;gap:4px}
-.seg{flex:1;height:6px;border-radius:99px;background:var(--paper-2);overflow:hidden;position:relative}
-.seg>i{position:absolute;left:0;top:0;bottom:0;border-radius:99px;display:block;animation:segfill .9s cubic-bezier(.34,.9,.3,1) both}
-@keyframes segfill{from{width:0!important}}
-.tc-sub{font-size:10.5px;color:var(--faint);margin-top:5px;line-height:1.25}
-.tc-sub b{font-family:"IBM Plex Mono",monospace;color:var(--muted);font-weight:500}
-.tc-sub b.g{color:var(--emerald);font-weight:600}
-@media (prefers-reduced-motion:reduce){.seg>i{animation:none}}
+/* ConOS Trust Score — thin continuous pill bar (matching brand reference) */
+.trustc{margin-top:10px;padding:0}
+.tc-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.tc-brand{font-size:12.5px;color:var(--navy);font-weight:600;letter-spacing:-.2px}
+.tc-brand b{font-weight:800;color:var(--navy-deep)}
+.tc-brand span{color:var(--navy);font-weight:400}
+.tc-band{font-size:12px;font-weight:700;letter-spacing:-.1px;color:#047857}
+.tc-band.st{color:#059669}
+.tc-band.mod{color:var(--cyan-700)}
+.tc-band.bld{color:var(--muted)}
+
+.tc-track{position:relative;height:16px;border-radius:999px;background:#EBF1F7;
+  box-shadow:inset 0 1px 2.5px rgba(10,23,48,.12);overflow:hidden;padding:0}
+.tc-fill{position:relative;height:100%;border-radius:999px;
+  background:linear-gradient(180deg,#4FA490 0%,#158064 45%,#046D4F 100%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.35),inset -2.5px 0 0 #00D9FF;
+  display:flex;align-items:center;justify-content:flex-end;padding-right:7px;
+  transition:width .8s cubic-bezier(.34,.9,.3,1)}
+.tc-intext{font-family:"IBM Plex Mono",monospace;font-size:9.5px;color:#fff;font-weight:500;white-space:nowrap;
+  text-shadow:0 1px 2px rgba(4,60,40,.6);line-height:1}
+.tc-intext b{font-weight:700}
+
+.tc-bot{display:flex;align-items:center;justify-content:space-between;margin-top:5px;font-size:11px;color:var(--muted)}
+.tc-vj b{color:var(--ink);font-weight:600}
+.tc-date b{color:var(--ink);font-weight:600}
 
 .lacts{display:flex;gap:8px;margin-top:10px;align-items:center}
 .lacts button{font:inherit;font-size:12px;font-weight:700;letter-spacing:-.15px;border-radius:10px;
@@ -588,28 +592,29 @@ function verBadge(r){
   if(r.tier>=2) return '<span class="verbadge f2">'+I.shield+'ConOS Verified</span>';
   return '<span class="verbadge f1">Unverified</span>';
 }
-/* Trust Score — segmented meter in brand greens (mint → emerald across the bar) */
+/* ConOS Trust Score — thin continuous pill bar */
 function scoreLabel(s){return s>=85?'Exceptional':s>=70?'Strong':s>=55?'Moderate':'Building';}
-function greenAt(t){const a=[52,211,153],b=[4,120,87];   // #34D399 mint → #047857 emerald
-  const c=a.map((v,i)=>Math.round(v+(b[i]-v)*t));return 'rgb('+c[0]+','+c[1]+','+c[2]+')';}
-function scoreMeter(score){
-  const N=5, frac=(score||0)/100*N; let s='';
-  for(let i=0;i<N;i++){const p=Math.max(0,Math.min(1,frac-i))*100, col=greenAt(N>1?i/(N-1):0);
-    s+='<span class="seg">'+(p>0?'<i style="width:'+p.toFixed(0)+'%;background:'+col+'"></i>':'')+'</span>';}
-  return '<div class="meter">'+s+'</div>';
-}
 function trustCluster(r){
-  const shd='<span class="shd">'+I.shield+'</span>';
-  const WM=shd+'<span class="wm">Con<span>OS</span></span>';
-  if(r.score==null)
-    return '<div class="trustc"><div class="tc-top"><span class="tc-lab">'+WM+' Trust Score</span>'+
-      '<span class="tc-score"><span class="tc-band" style="background:var(--line-2);color:var(--faint)">Not verified</span></span></div>'+
-      scoreMeter(0)+'<div class="tc-sub">No verified activity on ConOS yet</div></div>';
-  return '<div class="trustc"><div class="tc-top"><span class="tc-lab">'+WM+' Trust Score</span>'+
-    '<span class="tc-score"><span class="tc-num">'+r.score+'<s>/100</s></span>'+
-      '<span class="tc-band" style="background:var(--em-50);color:var(--emerald)">'+scoreLabel(r.score)+'</span></span></div>'+
-    scoreMeter(r.score)+
-    '<div class="tc-sub">'+(r.vj?'<b class="g">'+r.vj+'</b> verified projects':'Verification in progress')+' · updated <b>Aug 2026</b></div></div>';
+  const hasScore=r.score!=null;
+  const score=hasScore?r.score:0;
+  const band=hasScore?scoreLabel(r.score):'Not verified';
+  const bandClass=!hasScore?'bld':r.score>=85?'ex':r.score>=70?'st':r.score>=55?'mod':'bld';
+  const vjText=r.vj?'<b>'+r.vj+'</b> verified projects':'Verification in progress';
+  return '<div class="trustc">'+
+    '<div class="tc-top">'+
+      '<span class="tc-brand"><b>Con</b>OS Trust Score</span>'+
+      '<span class="tc-band '+bandClass+'">'+band+'</span>'+
+    '</div>'+
+    '<div class="tc-track">'+
+      '<div class="tc-fill" style="width:'+Math.max(score,hasScore?18:0)+'%">'+
+        (hasScore?'<span class="tc-intext"><b>'+r.score+'</b>/100</span>':'')+
+      '</div>'+
+    '</div>'+
+    '<div class="tc-bot">'+
+      '<span class="tc-vj">'+vjText+'</span>'+
+      '<span class="tc-date">updated <b>Aug 2026</b></span>'+
+    '</div>'+
+  '</div>';
 }
 function visible(){
   const q=(S.sub||S.q).trim().toLowerCase();
