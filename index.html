@@ -732,15 +732,36 @@ function scoreBar(r){
       ' Trust Score</span><span class="band" style="color:var(--faint)">Not verified yet</span></div>'+
       '<div class="scorebar none"></div>'+
       '<div class="scorenote"><span>No verified activity on ConOS</span></div></div>';
-  const col = r.score>=70?'var(--emerald)':(r.score>=55?'var(--cyan-700)':'var(--faint)');
-  const bandN = r.score>=85?'Exceptional':r.score>=70?'Strong':r.score>=55?'Moderate':'Building';
+  let col='#047857', grad='linear-gradient(90deg,#047857 0%,#059669 45%,#10B981 78%,#00D9FF 100%)';
+  let bandN='Building';
+  if(r.score>=85){
+    col='#047857';
+    grad='linear-gradient(90deg,#047857 0%,#10B981 55%,#00E699 82%,#00D9FF 100%)';
+    bandN='Exceptional';
+  }else if(r.score>=80){
+    col='#059669';
+    grad='linear-gradient(90deg,#047857 0%,#059669 45%,#10B981 78%,#00D9FF 100%)';
+    bandN='Very Strong';
+  }else if(r.score>=70){
+    col='#065F46';
+    grad='linear-gradient(90deg,#065F46 0%,#047857 45%,#059669 80%,#00D9FF 100%)';
+    bandN='Strong';
+  }else if(r.score>=55){
+    col='#0D9488';
+    grad='linear-gradient(90deg,#047857 0%,#0D9488 55%,#14B8A6 82%,#00D9FF 100%)';
+    bandN='Moderate';
+  }else{
+    col='#15803D';
+    grad='linear-gradient(90deg,#15803D 0%,#65A30D 60%,#84CC16 85%,#00D9FF 100%)';
+    bandN='Building';
+  }
   const w = Math.max(8, r.score);
   const dots=[[18,35],[34,65],[52,30],[66,70],[80,35],[92,60]]
     .map((d,i)=>'<b style="left:'+d[0]+'%;top:'+d[1]+'%;animation-delay:'+(i*0.42+0.9).toFixed(2)+'s"></b>').join('');
   return '<div class="scoreblock">'+
     '<div class="scorehd"><span class="lab">'+WM+' Trust Score</span>'+
       '<span class="score-meta"><span class="tc-badge"><b>'+r.score+'</b><s>/100</s></span><span class="band" style="color:'+col+'">'+bandN+'</span></span></div>'+
-    '<div class="scorebar"><i style="width:'+w+'%;background:linear-gradient(90deg,#047857 0%,#059669 45%,#10B981 78%,#00D9FF 100%)">'+
+    '<div class="scorebar"><i style="width:'+w+'%;background:'+grad+'">'+
       '<span class="glit">'+dots+'</span></i></div>'+
     '<div class="scorenote"><span>'+(r.vj?'<b>'+r.vj+'</b> verified projects':'Verification in progress')+
       '</span><span>updated <b>Aug 2026</b></span></div></div>';
