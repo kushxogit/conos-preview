@@ -443,13 +443,65 @@ h1,h2,h3,.disp{font-family:"Sora",sans-serif}
 .subchip.on{background:var(--navy);color:#fff;border-color:var(--navy);font-weight:700}
 .subchip.on small{color:rgba(255,255,255,.75)}
 
-.sort-bar{display:flex;align-items:center;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:10px;margin-bottom:8px}
-.sort-bar::-webkit-scrollbar{display:none}
-.sort-lbl{font-size:11px;font-weight:700;color:var(--faint);text-transform:uppercase;letter-spacing:.06em;flex:none;margin-right:2px}
-.sort-pill{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:600;color:var(--muted);
-  background:#fff;border:1px solid var(--line);border-radius:99px;padding:5px 12px;cursor:pointer;white-space:nowrap;flex:none;transition:.15s}
-.sort-pill:hover{border-color:var(--navy);color:var(--navy)}
-.sort-pill.on{background:var(--navy);color:#fff;border-color:var(--navy);font-weight:700;box-shadow:0 2px 6px rgba(10,28,60,.15)}
+/* Clean 2-Button Action Bar (Sort & Filter) */
+.sf-action-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px;margin-bottom:10px}
+.sf-btn{display:flex;align-items:center;justify-content:space-between;gap:8px;height:44px;padding:0 14px;
+  background:#fff;border:1px solid var(--line);border-radius:12px;cursor:pointer;font:inherit;
+  font-size:13px;font-weight:700;color:var(--text);box-shadow:0 1.5px 4px rgba(10,27,51,.05);transition:.18s}
+.sf-btn:hover{border-color:var(--navy);color:var(--navy);box-shadow:0 3px 8px rgba(10,27,51,.08)}
+.sf-btn svg{width:16px;height:16px;flex:none;color:var(--navy)}
+.sf-btn svg.arrow{width:13px;height:13px;color:var(--faint);transition:transform .2s}
+.sf-btn.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+.sf-btn.on svg{color:#fff}
+.sf-btn.on svg.arrow{color:rgba(255,255,255,.7)}
+.sf-count{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;
+  padding:0 5px;border-radius:99px;background:var(--emerald);color:#fff;font-size:10.5px;font-weight:800}
+
+/* Sort & Filter Bottom Sheets */
+.sf-sheet{position:absolute;left:0;right:0;bottom:0;background:#fff;border-radius:24px 24px 0 0;z-index:23;
+  padding:14px 20px 24px;max-height:80%;overflow-y:auto;transform:translateY(100%);transition:transform .32s cubic-bezier(.32,.72,0,1)}
+.sf-sheet.on{transform:none}
+.sf-sheet-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--line-2)}
+.sf-sheet-hd h3{font-family:"Sora",sans-serif;font-size:17px;font-weight:700;letter-spacing:-.3px;margin:0;color:var(--ink)}
+.sf-sheet-close{width:32px;height:32px;border-radius:50%;border:none;background:var(--paper-2);color:var(--muted);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;transition:.15s}
+.sf-sheet-close:hover{background:var(--line);color:var(--text)}
+.sf-sheet-close svg{width:15px;height:15px}
+
+.sf-opt-list{display:flex;flex-direction:column;gap:8px;margin-bottom:18px}
+.sf-opt-item{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 16px;
+  background:var(--paper-2);border:1px solid var(--line);border-radius:14px;cursor:pointer;font:inherit;
+  text-align:left;transition:.15s}
+.sf-opt-item:hover{border-color:var(--navy-200);background:#fff}
+.sf-opt-item.sel{background:var(--em-50);border-color:var(--em-200);color:var(--emerald)}
+.sf-opt-item.sel b{color:var(--emerald)}
+.sf-opt-item b{font-size:13.5px;font-weight:700;color:var(--ink);display:block}
+.sf-opt-item span{font-size:11.5px;color:var(--muted);margin-top:1px;display:block}
+.sf-opt-radio{width:18px;height:18px;border-radius:50%;border:2px solid var(--line);flex:none;
+  display:flex;align-items:center;justify-content:center;transition:.15s}
+.sf-opt-item.sel .sf-opt-radio{border-color:var(--emerald);background:var(--emerald)}
+.sf-opt-radio::after{content:"";width:6px;height:6px;border-radius:50%;background:#fff;opacity:0}
+.sf-opt-item.sel .sf-opt-radio::after{opacity:1}
+
+.sf-filter-grid{display:flex;flex-direction:column;gap:10px;margin-bottom:20px}
+.sf-filter-card{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;
+  background:var(--paper-2);border:1px solid var(--line);border-radius:14px;cursor:pointer;transition:.15s}
+.sf-filter-card:hover{border-color:var(--navy-200);background:#fff}
+.sf-filter-card.on{background:var(--em-50);border-color:var(--em-200)}
+.sf-filter-card .lbl{display:flex;align-items:center;gap:10px;font-size:13px;font-weight:700;color:var(--ink)}
+.sf-filter-card .lbl svg{width:16px;height:16px;color:var(--navy)}
+.sf-filter-card.on .lbl svg{color:var(--emerald)}
+.sf-toggle{width:40px;height:24px;border-radius:99px;background:var(--line);position:relative;transition:.2s;flex:none}
+.sf-toggle::after{content:"";position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2);transition:.2s}
+.sf-filter-card.on .sf-toggle{background:var(--emerald)}
+.sf-filter-card.on .sf-toggle::after{transform:translateX(16px)}
+
+.sf-modal-footer{display:flex;gap:10px}
+.sf-modal-btn{flex:1;height:46px;border-radius:12px;font:inherit;font-size:14px;font-weight:700;cursor:pointer;transition:.15s}
+.sf-modal-btn.primary{background:var(--navy);color:#fff;border:none;box-shadow:0 2px 8px rgba(10,28,60,.2)}
+.sf-modal-btn.primary:hover{background:var(--navy-deep)}
+.sf-modal-btn.secondary{background:var(--paper-2);color:var(--muted);border:1px solid var(--line)}
+.sf-modal-btn.secondary:hover{border-color:var(--navy);color:var(--navy)}
 
 /* tab bar */
 .tabs{flex:none;display:flex;border-top:1px solid var(--line-2);background:#fff;padding:8px 0 10px}
@@ -566,6 +618,9 @@ h1,h2,h3,.disp{font-family:"Sora",sans-serif}
   <div class="scrim" id="scrim"></div>
   <div class="sheet" id="sheet"></div>
   <div class="scrim" id="credScrim"></div>
+  <div class="scrim" id="sfScrim"></div>
+  <div class="sf-sheet" id="sortSheet"></div>
+  <div class="sf-sheet" id="filterSheet"></div>
   <div class="sheet cred-sheet" id="credSheet">
     <div class="grab"></div>
     <div class="cred-head">
@@ -1084,6 +1139,62 @@ function closeSheet(){$('#scrim').classList.remove('on');$('#sheet').classList.r
 function openCredModal(){$('#credScrim').classList.add('on');$('#credSheet').classList.add('on');}
 function closeCredModal(){$('#credScrim').classList.remove('on');$('#credSheet').classList.remove('on');}
 
+function openSortModal(){
+  const opts = [
+    {k:'score', b:'ConOS Trust Score 🏆', s:'Highest verified score ranking first'},
+    {k:'near', b:'Nearest Location 📍', s:'Closest distance from project site'},
+    {k:'stars', b:'Customer Rating ⭐', s:'4.5+ star review rating'},
+    {k:'rate', b:'Lowest Price 💸', s:'Lowest daily / unit rate'},
+    {k:'exp', b:'Years of Experience 💼', s:'Most experienced trade contractors'}
+  ];
+  $('#sortSheet').innerHTML =
+    '<div class="grab"></div>'+
+    '<div class="sf-sheet-hd">'+
+      '<h3>Sort Listings</h3>'+
+      '<button class="sf-sheet-close" id="closeSortBtn">'+I.x+'</button>'+
+    '</div>'+
+    '<div class="sf-opt-list">'+
+      opts.map(o=>
+        '<button class="sf-opt-item'+(S.sort===o.k?' sel':'')+'" data-setsort="'+o.k+'">'+
+          '<div><b>'+o.b+'</b><span>'+o.s+'</span></div>'+
+          '<span class="sf-opt-radio"></span>'+
+        '</button>'
+      ).join('')+
+    '</div>';
+  $('#sfScrim').classList.add('on');
+  $('#sortSheet').classList.add('on');
+}
+
+function openFilterModal(){
+  $('#filterSheet').innerHTML =
+    '<div class="grab"></div>'+
+    '<div class="sf-sheet-hd">'+
+      '<h3>Filter Listings</h3>'+
+      '<button class="sf-sheet-close" id="closeFilterBtn">'+I.x+'</button>'+
+    '</div>'+
+    '<div class="sf-filter-grid">'+
+      QFILT.map(x=>{
+        const active = S.qf.indexOf(x.k)>=0;
+        return '<div class="sf-filter-card'+(active?' on':'')+'" data-toggleqf="'+x.k+'">'+
+          '<span class="lbl">'+I[x.ic]+esc(x.t)+'</span>'+
+          '<span class="sf-toggle"></span>'+
+        '</div>';
+      }).join('')+
+    '</div>'+
+    '<div class="sf-modal-footer">'+
+      '<button class="sf-modal-btn secondary" data-clearqf>Reset All</button>'+
+      '<button class="sf-modal-btn primary" id="applyFilterBtn">Apply Filters</button>'+
+    '</div>';
+  $('#sfScrim').classList.add('on');
+  $('#filterSheet').classList.add('on');
+}
+
+function closeSFModals(){
+  $('#sfScrim').classList.remove('on');
+  $('#sortSheet').classList.remove('on');
+  $('#filterSheet').classList.remove('on');
+}
+
 document.addEventListener('click',e=>{
   const t=e.target.closest('[data-cat]');
   if(t){
@@ -1139,12 +1250,33 @@ document.addEventListener('click',e=>{
     }
     return;
   }
-  const st=e.target.closest('[data-sort]');
-  if(st){
-    S.sort=st.dataset.sort;
+  if(e.target.id==='sfScrim' || e.target.closest('#closeSortBtn') || e.target.closest('#closeFilterBtn') || e.target.closest('#applyFilterBtn')){
+    closeSFModals();return;
+  }
+  if(e.target.closest('#openSortBtn')){openSortModal();return;}
+  if(e.target.closest('#openFilterBtn')){openFilterModal();return;}
+  const ss=e.target.closest('[data-setsort]');
+  if(ss){
+    S.sort=ss.dataset.setsort;
+    closeSFModals();
     render();
-    const sortLabels={score:'ConOS Score 🏆',near:'Nearest location 📍',stars:'Top Rating ⭐',rate:'Lowest Price 💸'};
+    const sortLabels={score:'ConOS Score 🏆',near:'Nearest 📍',stars:'Top Rating ⭐',rate:'Price 💸',exp:'Experience 💼'};
     toast('Sorted by '+(sortLabels[S.sort]||S.sort));
+    return;
+  }
+  const tq=e.target.closest('[data-toggleqf]');
+  if(tq){
+    const k=tq.dataset.toggleqf, idx=S.qf.indexOf(k);
+    if(idx>=0) S.qf.splice(idx,1); else S.qf.push(k);
+    openFilterModal();
+    render();
+    return;
+  }
+  if(e.target.closest('[data-clearqf]')){
+    S.qf=[];
+    openFilterModal();
+    render();
+    toast('Filters reset');
     return;
   }
   const cc=e.target.closest('[data-clearcat]');
