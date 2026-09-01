@@ -326,31 +326,41 @@ h1,h2,h3,.disp{font-family:"Sora",sans-serif}
 .lav:not(.soon) i{animation:livepulse 2.1s ease-out infinite}
 .lav.soon{color:var(--cyan-700)}
 
-/* ConOS Trust Score — thin continuous pill bar (matching brand reference) */
-.trustc{margin-top:10px;padding:0}
-.tc-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
-.tc-brand{font-size:12.5px;color:var(--navy);font-weight:600;letter-spacing:-.2px}
-.tc-brand b{font-weight:800;color:var(--navy-deep)}
-.tc-brand span{color:var(--navy);font-weight:400}
-.tc-band{font-size:12px;font-weight:700;letter-spacing:-.1px;color:#047857}
-.tc-band.st{color:#059669}
-.tc-band.mod{color:var(--cyan-700)}
-.tc-band.bld{color:var(--muted)}
-
-.tc-track{position:relative;height:16px;border-radius:999px;background:#EBF1F7;
-  box-shadow:inset 0 1px 2.5px rgba(10,23,48,.12);overflow:hidden;padding:0}
-.tc-fill{position:relative;height:100%;border-radius:999px;
-  background:linear-gradient(180deg,#4FA490 0%,#158064 45%,#046D4F 100%);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.35),inset -2.5px 0 0 #00D9FF;
-  display:flex;align-items:center;justify-content:flex-end;padding-right:7px;
-  transition:width .8s cubic-bezier(.34,.9,.3,1)}
-.tc-intext{font-family:"IBM Plex Mono",monospace;font-size:9.5px;color:#fff;font-weight:500;white-space:nowrap;
-  text-shadow:0 1px 2px rgba(4,60,40,.6);line-height:1}
-.tc-intext b{font-weight:700}
-
-.tc-bot{display:flex;align-items:center;justify-content:space-between;margin-top:5px;font-size:11px;color:var(--muted)}
-.tc-vj b{color:var(--ink);font-weight:600}
-.tc-date b{color:var(--ink);font-weight:600}
+/* ConOS Trust Score — signature data object with liquid fill, cyan meniscus, glitter and shimmer from Design B */
+.scoreblock{margin-top:10px;margin-bottom:2px}
+.scorehd{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:6px}
+.scorehd .lab{font-size:12.5px;font-weight:500;color:var(--muted);display:flex;align-items:baseline;gap:5px}
+.scorehd .wm{font-size:13.5px;letter-spacing:-.4px;color:var(--navy)}
+.scorehd .wm b{font-weight:700}.scorehd .wm em{font-weight:400;font-style:normal}
+.scorehd .band{font-size:11.5px;font-weight:700;letter-spacing:.02em}
+.scorebar{position:relative;height:18px;border-radius:99px;background:#E9EEF6;
+  box-shadow:inset 0 1px 2px rgba(13,27,51,.10),inset 0 0 0 1px #DCE4F0;overflow:hidden}
+.scorebar>i{position:absolute;left:0;top:0;bottom:0;border-radius:99px;display:block;overflow:hidden;
+  box-shadow:inset -2px 0 0 0 #00D9FF, 0 0 10px rgba(0,217,255,.35);
+  animation:fillup 1.15s cubic-bezier(.34,.9,.3,1) both}
+@keyframes fillup{from{width:0 !important}}
+/* liquid surface: a lighter meniscus along the top, a darker settle at the base */
+.scorebar>i::before{content:"";position:absolute;inset:0;border-radius:99px;
+  background:linear-gradient(180deg,rgba(255,255,255,.34) 0%,rgba(255,255,255,.10) 42%,
+    rgba(255,255,255,0) 58%,rgba(0,0,0,.10) 100%)}
+/* glitter: a slow sheen travelling through the liquid */
+.scorebar>i::after{content:"";position:absolute;top:0;bottom:0;width:52%;
+  background:linear-gradient(105deg,transparent 20%,rgba(255,255,255,.62) 50%,transparent 80%);
+  animation:sheen 3.6s cubic-bezier(.45,0,.35,1) 1.2s infinite}
+@keyframes sheen{0%{left:-55%}55%{left:105%}100%{left:105%}}
+.glit{position:absolute;inset:0;pointer-events:none}
+.glit b{position:absolute;width:2.8px;height:2.8px;border-radius:50%;background:#fff;opacity:0;
+  box-shadow:0 0 4px rgba(255,255,255,.9);animation:twinkle 2.6s ease-in-out infinite}
+@keyframes twinkle{0%,68%,100%{opacity:0;transform:scale(.5)}78%{opacity:1;transform:scale(1.15)}88%{opacity:.25;transform:scale(.7)}}
+.scorebar .num{position:absolute;top:0;bottom:0;display:flex;align-items:center;gap:1px;z-index:3;
+  font-family:"IBM Plex Mono",monospace;font-size:12px;font-weight:600;color:#fff;letter-spacing:-.3px;
+  text-shadow:0 1px 2px rgba(13,27,51,.35);transition:left .8s cubic-bezier(.34,.9,.3,1)}
+.scorebar .num s{text-decoration:none;font-size:9px;opacity:.75;font-weight:500}
+.scorebar.none{background:#F2F5F9;box-shadow:inset 0 0 0 1px var(--line)}
+.scorenote{font-size:11px;color:var(--faint);margin-top:5px;display:flex;justify-content:space-between;gap:8px}
+.scorenote b{font-family:"IBM Plex Mono",monospace;color:var(--muted);font-weight:600}
+@media (prefers-reduced-motion:reduce){
+  .scorebar>i{animation:none}.scorebar>i::after{animation:none;opacity:0}.glit b{animation:none;opacity:0}}
 
 .lacts{display:flex;gap:8px;margin-top:10px;align-items:center}
 .lacts button{font:inherit;font-size:12px;font-weight:700;letter-spacing:-.15px;border-radius:10px;
@@ -590,29 +600,27 @@ function verBadge(r){
   if(r.tier>=2) return '<span class="verbadge f2">'+I.shield+'ConOS Verified</span>';
   return '<span class="verbadge f1">Unverified</span>';
 }
-/* ConOS Trust Score — thin continuous pill bar */
-function scoreLabel(s){return s>=85?'Exceptional':s>=70?'Strong':s>=55?'Moderate':'Building';}
-function trustCluster(r){
-  const hasScore=r.score!=null;
-  const score=hasScore?r.score:0;
-  const band=hasScore?scoreLabel(r.score):'Not verified';
-  const bandClass=!hasScore?'bld':r.score>=85?'ex':r.score>=70?'st':r.score>=55?'mod':'bld';
-  const vjText=r.vj?'<b>'+r.vj+'</b> verified projects':'Verification in progress';
-  return '<div class="trustc">'+
-    '<div class="tc-top">'+
-      '<span class="tc-brand"><b>Con</b>OS Trust Score</span>'+
-      '<span class="tc-band '+bandClass+'">'+band+'</span>'+
-    '</div>'+
-    '<div class="tc-track">'+
-      '<div class="tc-fill" style="width:'+Math.max(score,hasScore?18:0)+'%">'+
-        (hasScore?'<span class="tc-intext"><b>'+r.score+'</b>/100</span>':'')+
-      '</div>'+
-    '</div>'+
-    '<div class="tc-bot">'+
-      '<span class="tc-vj">'+vjText+'</span>'+
-      '<span class="tc-date">updated <b>Aug 2026</b></span>'+
-    '</div>'+
-  '</div>';
+/* ===== ConOS score: the signature object with shimmer & glitter from Design B ===== */
+function scoreBar(r){
+  const WM='<span class="wm"><b>Con</b><em>OS</em></span>';
+  if(r.score==null)
+    return '<div class="scoreblock"><div class="scorehd"><span class="lab">'+WM+
+      ' Trust Score</span><span class="band" style="color:var(--faint)">Not verified yet</span></div>'+
+      '<div class="scorebar none"></div>'+
+      '<div class="scorenote"><span>No verified activity on ConOS</span></div></div>';
+  const col = r.score>=70?'var(--emerald)':(r.score>=55?'var(--cyan-700)':'var(--faint)');
+  const bandN = r.score>=85?'Exceptional':r.score>=70?'Strong':r.score>=55?'Moderate':'Building';
+  const w = Math.max(30, r.score);
+  const dots=[[18,32],[34,68],[52,26],[66,72],[80,40],[92,62]]
+    .map((d,i)=>'<b style="left:'+d[0]+'%;top:'+d[1]+'%;animation-delay:'+(i*0.42+0.9).toFixed(2)+'s"></b>').join('');
+  return '<div class="scoreblock">'+
+    '<div class="scorehd"><span class="lab">'+WM+' Trust Score</span>'+
+      '<span class="band" style="color:'+col+'">'+bandN+'</span></div>'+
+    '<div class="scorebar"><i style="width:'+w+'%;background:'+col+'">'+
+      '<span class="glit">'+dots+'</span></i>'+
+      '<span class="num" style="left:calc('+w+'% - 50px)">'+r.score+'<s>/100</s></span></div>'+
+    '<div class="scorenote"><span>'+(r.vj?'<b>'+r.vj+'</b> verified projects':'Verification in progress')+
+      '</span><span>updated <b>Aug 2026</b></span></div></div>';
 }
 function visible(){
   const q=(S.sub||S.q).trim().toLowerCase();
@@ -661,7 +669,7 @@ function card(r){
         '<button class="savebtn'+(sv?' on':'')+'" data-save="'+esc(r.n)+'" aria-label="Save">'+(sv?I.savef:I.save)+'</button>'+
       '</div>'+
     '</div>'+
-    trustCluster(r)+
+    scoreBar(r)+
     '<div class="lacts">'+
       '<button class="a1" data-contact="'+esc(r.n)+'">'+I.phone+'Contact now</button>'+
       '<button class="a2" data-go="'+esc(r.n)+' — profile">Profile</button>'+
