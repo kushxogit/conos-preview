@@ -533,7 +533,7 @@ h1,h2,h3,.disp{font-family:"Sora",sans-serif}
         </div>
         <div>
           <h3>Con Credits</h3>
-          <p>Earn by referring &bull; Unlock site leads</p>
+          <p>Earn by referring &bull; Unlock client leads</p>
         </div>
       </div>
       <button class="cred-close" id="credCloseBtn" aria-label="Close">&times;</button>
@@ -548,7 +548,7 @@ h1,h2,h3,.disp{font-family:"Sora",sans-serif}
         <span class="cb-val">250</span>
         <span class="cb-unit">Con Creds</span>
       </div>
-      <div class="cb-equiv">≈ <b>5 Lead Unlocks</b> ready to use</div>
+      <div class="cb-equiv">≈ <b>25 Client Lead Unlocks</b> (10 Creds = 1 Lead)</div>
     </div>
 
     <div class="cred-body">
@@ -558,14 +558,14 @@ h1,h2,h3,.disp{font-family:"Sora",sans-serif}
           <span class="step-icon">👥</span>
           <div>
             <b>Earn by Referring</b>
-            <p>Share your link with contractors & builders. Get <b>+50 Con Creds</b> per verified signup.</p>
+            <p>Share your referral link with contractors, subcontractors, workers, professionals & clients. Earn <b>10 Con Creds</b> per verified signup.</p>
           </div>
         </li>
         <li>
           <span class="step-icon">🔓</span>
           <div>
-            <b>Unlock Direct Site Leads</b>
-            <p>Use credits to reveal client numbers, site drawings & RFQ specifications.</p>
+            <b>Unlock Client Leads</b>
+            <p>Use your Con Creds to reveal more client leads for your work.</p>
           </div>
         </li>
       </ul>
@@ -574,7 +574,7 @@ h1,h2,h3,.disp{font-family:"Sora",sans-serif}
     <div class="cred-actions">
       <button class="cred-cta primary" id="referBtn">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-        Refer & Earn (+50 Creds)
+        Refer & Earn (+10 Creds)
       </button>
       <button class="cred-cta secondary" id="redeemBtn">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
@@ -990,12 +990,12 @@ document.addEventListener('click',e=>{
         navigator.clipboard.writeText('https://conos.app/ref/RA7821');
       }
     }catch(_){}
-    toast('Referral link copied! Share to earn +50 Con Creds per join.');
+    toast('Referral link copied! Share with contractors, sub-workers & clients for 10 Con Creds per join.');
     closeCredModal();
     return;
   }
   if(e.target.closest('#redeemBtn')){
-    toast('250 Con Creds available! Select any listing to unlock direct contact numbers.');
+    toast('250 Con Creds active! Redeem 10 Creds to reveal a client lead for your work.');
     closeCredModal();
     return;
   }
