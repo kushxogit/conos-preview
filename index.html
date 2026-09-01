@@ -511,7 +511,7 @@ h1,h2,h3,.disp{font-family:"Sora",sans-serif}
       <button class="locbtn det" id="locBtn"><span class="nm">Detecting location…</span></button>
     </div>
     <div class="hdr-actions">
-      <button class="hdrbtn boltbtn" data-go="Instant match" aria-label="Instant match">
+      <button class="hdrbtn boltbtn" id="credBoltBtn" data-go="Instant match" aria-label="Instant match">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 5 13h6l-1 9 8-11h-6z"/></svg>
         <span class="bolt-dot"></span>
       </button>
@@ -1015,7 +1015,21 @@ function openCredModal(){$('#credScrim').classList.add('on');$('#credSheet').cla
 function closeCredModal(){$('#credScrim').classList.remove('on');$('#credSheet').classList.remove('on');}
 
 document.addEventListener('click',e=>{
-  if(e.target.closest('.boltbtn') || e.target.closest('#credBtn')){openCredModal();return;}
+  const t=e.target.closest('[data-cat]');
+  if(t){
+    const k=t.dataset.cat,was=S.filter===k;
+    S.filter=was?null:k;S.sub=null;S.q='';
+    toast(was?'Show all categories':'Showing '+CATS.find(x=>x.k===k).name.toLowerCase());
+    render();
+    if(!was){
+      setTimeout(()=>{
+        const sec=$('#catListingsSec');
+        if(sec) sec.scrollIntoView({block:'start',behavior:'smooth'});
+      },60);
+    }
+    return;
+  }
+  if(e.target.closest('#credBoltBtn') || e.target.closest('#credBtn')){openCredModal();return;}
   if(e.target.id==='credScrim' || e.target.closest('#credCloseBtn')){closeCredModal();return;}
   if(e.target.closest('#referBtn')){
     try{
@@ -1044,20 +1058,6 @@ document.addEventListener('click',e=>{
     if(S.sub===n){S.sub=null;S.q='';S.filter=null;toast('Showing everything');}
     else{S.sub=n;S.q=n;S.filter=sb2.dataset.subcat;toast(visible().length+' in '+n);}
     render();const h=$$('.sec h2').find(x=>x.textContent===n);if(h)h.scrollIntoView({block:'start',behavior:'smooth'});return;}
-  const t=e.target.closest('[data-cat]');
-  if(t){
-    const k=t.dataset.cat,was=S.filter===k;
-    S.filter=was?null:k;S.sub=null;S.q='';
-    toast(was?'Show all categories':'Showing '+CATS.find(x=>x.k===k).name.toLowerCase());
-    render();
-    if(!was){
-      setTimeout(()=>{
-        const sec=$('#catListingsSec');
-        if(sec) sec.scrollIntoView({block:'start',behavior:'smooth'});
-      },60);
-    }
-    return;
-  }
   const qf=e.target.closest('[data-qf]');
   if(qf){const k=qf.dataset.qf,i=S.qf.indexOf(k);if(i>=0)S.qf.splice(i,1);else S.qf.push(k);
     render();toast(S.qf.length?visible().length+' match '+S.qf.length+' filter'+(S.qf.length>1?'s':''):'Filters cleared');
