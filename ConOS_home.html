@@ -842,23 +842,28 @@ function partnerBlock(){
 
 function render(){
   const rows=visible(),c=S.filter&&CATS.find(x=>x.k===S.filter);
-  const heading=S.sub?S.sub:(c?c.name:'Near you');
+  const isFiltered = !!(S.filter || S.sub || S.q || S.qf.length);
+  const heading = S.sub ? S.sub : (c ? c.name : 'Category Listings');
+
+  const cardsContent = isFiltered
+    ? '<div class="sec"><h2>'+esc(heading)+'</h2><span class="r">'+rows.length+' listed</span></div>'+
+      (rows.length ? rows.map(card).join('')
+       : '<div class="empty">Nothing matched that filter.<br>ConOS shows the gap rather than padding the page.<br><button class="chip" data-clear style="margin-top:14px">Clear all filters</button></div>')
+    : '<div class="note" style="margin-top:16px"><b>Select any category above</b> to view verified contractors, equipment rentals, and material suppliers.</div>';
+
   $('#scroll').innerHTML=
   '<div class="chips">'+QFILT.map(x=>'<button class="chip" data-qf="'+x.k+'" aria-pressed="'+(S.qf.indexOf(x.k)>=0)+'">'+I[x.ic]+esc(x.t)+'</button>').join('')+'</div>'+
   '<div class="tstack" id="tstack">'+
     '<button class="trust tface front" data-go="'+esc(TRUST[0][1])+'">'+tfaceInner(TRUST[0])+'</button>'+
     '<button class="trust tface" data-go="'+esc(TRUST[1][1])+'">'+tfaceInner(TRUST[1])+'</button></div>'+
-  '<div class="sec"><h2>What do you need?</h2>'+(S.filter||S.sub||S.qf.length?'<button data-clear>Show everything</button>':'<span class="r">Tap to filter</span>')+'</div>'+
+  '<div class="sec"><h2>What do you need?</h2>'+(isFiltered?'<button data-clear>Show all categories</button>':'<span class="r">Tap category to view</span>')+'</div>'+
   '<div class="tiles">'+CATS.map(tile).join('')+'</div>'+
-  '<p class="hintline">Captions cycle to show the real work in each category. Tap a tile to filter.</p>'+
+  '<p class="hintline">Captions cycle to show real work in each category. Tap a tile to open category listings.</p>'+
   '<div class="sec"><h2>Hire professionals</h2><span class="r">56 professions</span></div>'+
   '<div class="prow">'+PROS.map(p=>'<button class="pro" data-go="'+esc(p.t)+'"><span class="pimg" style="background:'+p.grad+'">'+
     (p.img?'<img src="'+p.img+'" alt="'+esc(p.t)+'" loading="lazy"><span class="veil"></span>':'<span class="art">'+SI[p.ic]+'</span>')+
     '</span><span class="pt">'+esc(p.t)+'</span><span class="ps">'+esc(p.s)+'</span><span class="pe">'+esc(p.e)+'</span></button>').join('')+'</div>'+
-  '<div class="sec"><h2>'+esc(heading)+'</h2><span class="r">'+rows.length+' listed</span></div>'+
-  (rows.length?rows.map(card).join('')
-   :'<div class="empty">Nothing matched that filter.<br>ConOS shows the gap rather than padding the page.<br><button class="chip" data-clear style="margin-top:14px">Clear all filters</button></div>')+
-  '<div class="note"><b>All of this is free, with no account.</b> Search, filter, open any profile, read the evidence behind every badge and compare up to three. You only sign in when you want a phone number.</div>'+
+  cardsContent+
   partnerBlock();
   $('#tabs').innerHTML=[['Home','home',1],['Projects','proj',0],['Leads','brief',0],['Messages','chat',0],['More','more',0]]
     .map(t=>'<button class="'+(t[2]?'on':'')+'" data-go="'+t[0]+'">'+I[t[1]]+'<span>'+t[0]+'</span></button>').join('');
