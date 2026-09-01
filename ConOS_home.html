@@ -342,10 +342,11 @@ h1,h2,h3,.disp{font-family:"Sora",sans-serif}
 .scorehd .lab{font-size:12px;font-weight:500;color:var(--muted);display:flex;align-items:baseline;gap:5px}
 .scorehd .wm{font-size:13.5px;letter-spacing:-.4px;color:var(--navy)}
 .scorehd .wm b{font-weight:700}.scorehd .wm em{font-weight:400;font-style:normal}
-.scorehd .score-meta{display:flex;align-items:baseline;gap:5px;font-size:12px}
-.scorehd .score-meta .tc-val{font-family:"IBM Plex Mono",monospace;font-size:12px;font-weight:700;color:var(--ink)}
-.scorehd .score-meta s{font-family:"IBM Plex Mono",monospace;text-decoration:none;font-size:9px;color:var(--faint)}
-.scorehd .score-meta .sep{color:var(--line);font-size:10px}
+.scorehd .score-meta{display:flex;align-items:center;gap:6px}
+.scorehd .tc-badge{font-family:"IBM Plex Mono",monospace;font-size:11px;font-weight:700;
+  color:var(--emerald);background:var(--em-50);border:1px solid var(--em-200);
+  padding:2px 7px;border-radius:6px;letter-spacing:-.2px;display:inline-flex;align-items:baseline;gap:1px}
+.scorehd .tc-badge s{font-family:"IBM Plex Mono",monospace;text-decoration:none;font-size:8.5px;color:var(--faint);font-weight:400}
 .scorehd .band{font-size:11.5px;font-weight:700;letter-spacing:.02em}
 
 .scorebar{position:relative;height:6px;border-radius:99px;background:#E9EEF6;
@@ -635,7 +636,7 @@ function scoreBar(r){
     .map((d,i)=>'<b style="left:'+d[0]+'%;top:'+d[1]+'%;animation-delay:'+(i*0.42+0.9).toFixed(2)+'s"></b>').join('');
   return '<div class="scoreblock">'+
     '<div class="scorehd"><span class="lab">'+WM+' Trust Score</span>'+
-      '<span class="score-meta"><b class="tc-val">'+r.score+'</b><s>/100</s><span class="sep">·</span><span class="band" style="color:'+col+'">'+bandN+'</span></span></div>'+
+      '<span class="score-meta"><span class="tc-badge"><b>'+r.score+'</b><s>/100</s></span><span class="band" style="color:'+col+'">'+bandN+'</span></span></div>'+
     '<div class="scorebar"><i style="width:'+w+'%;background:'+col+'">'+
       '<span class="glit">'+dots+'</span></i></div>'+
     '<div class="scorenote"><span>'+(r.vj?'<b>'+r.vj+'</b> verified projects':'Verification in progress')+
