@@ -634,7 +634,7 @@ const I={
  bell:g('<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>',1.9),
  grid:g('<rect x="3" y="3" width="7" height="7" rx="1.8"/><rect x="14" y="3" width="7" height="7" rx="1.8"/><rect x="3" y="14" width="7" height="7" rx="1.8"/><rect x="14" y="14" width="7" height="7" rx="1.8"/>',1.9),
  heart:g('<path d="M12 20s-7-4.6-9.2-8.4A5 5 0 0 1 12 6a5 5 0 0 1 9.2 5.6C19 15.4 12 20 12 20z"/>',1.9),
- chat:g('<path d="M4 5h16v11H8l-4 3z"/>',1.9),
+ chat:g('<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>',1.9),
  home:g('<path d="M4 11 12 4l8 7v9H4z"/><path d="M10 20v-5h4v5"/>',1.9),
  proj:g('<path d="m12 3 9 5-9 5-9-5z"/><path d="m3 12 9 5 9-5"/><path d="m3 16.5 9 5 9-5"/>',1.7),
  brief:g('<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5.5A2.5 2.5 0 0 1 10.5 3h3A2.5 2.5 0 0 1 16 5.5V7"/><path d="M3 13h18"/>',1.8),
@@ -793,7 +793,7 @@ function card(r){
     '</div>'+
     scoreBar(r)+
     '<div class="lacts">'+
-      '<button class="a1" data-contact="'+esc(r.n)+'">'+I.phone+'Unlock Contact (10 Creds)</button>'+
+      '<button class="a1" data-contact="'+esc(r.n)+'">'+I.chat+'Contact</button>'+
       '<button class="a2" data-go="'+esc(r.n)+' — profile">Profile</button>'+
     '</div>'+
   '</div>';
@@ -1004,7 +1004,7 @@ document.addEventListener('click',e=>{
   const sb=e.target.closest('[data-save]');
   if(sb){e.stopPropagation();const n=sb.dataset.save,i=S.saved.indexOf(n);
     if(i>=0){S.saved.splice(i,1);toast('Removed from saved');}else{S.saved.push(n);toast('Saved — no account needed');}render();return;}
-  const cn=e.target.closest('[data-contact]'); if(cn){e.stopPropagation();toast('Contact '+cn.dataset.contact+' — 10 Con Creds required to unlock');return;}
+  const cn=e.target.closest('[data-contact]'); if(cn){e.stopPropagation();toast('Messaging '+cn.dataset.contact+'…');return;}
   const sb2=e.target.closest('[data-sub]');
   if(sb2){const n=sb2.dataset.sub;
     if(S.sub===n){S.sub=null;S.q='';S.filter=null;toast('Showing everything');}
